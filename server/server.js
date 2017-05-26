@@ -4,8 +4,8 @@ const bodyParser = require('body-parser');
 const {ObjectID} = require('mongodb');
 //Local imports
 var {mongoose} = require ('./db/mongoose');
-var {Products} = require('./models/product');
-var {User} = require('./models/user');
+var Products = require('./models/product');
+var User = require('./models/user');
 
 var app = express();
 
@@ -13,15 +13,23 @@ var app = express();
 // pass it to the `req` parameter
 app.use(bodyParser.json());
 
-db.collection('B2BUsers').insertOne({
+var myUser = new User({
     user: 'blath',
-    name 'blah',
+    name: 'blah',
     itemCount: 3,
     products: [{ }]
-}, (err, result) => {
-   if (err) {
-     return console.log('Unable to insert todo', err);
-   }
+});
 
-   console.log(JSON.stringify(result.ops, undefined, 2));
- });
+myUser.save().then((savedUser) => {
+    console.log('saved user', JSON.stringify(savedUser, undefined, 2));
+}, (error) => {
+    console.log('Unable to save', error);
+});
+
+// , (err, result) => {
+//    if (err) {
+//      return console.log('Unable to insert todo', err);
+//    }
+//
+//    console.log(JSON.stringify(result.ops, undefined, 2));
+//  });

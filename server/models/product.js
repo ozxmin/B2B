@@ -4,13 +4,13 @@ const Schema = mongoose.Schema;
 const ProductSchema = new Schema({
     name: {
         type: String,
-        required: true,
+        required: false,
         minlength: 1,
         trim: true //trims leading and trailing white spaces
     },
     description: {
         type: String,
-        required: true,
+        required: false,
         minlength: 1,
         trim: true
     },
