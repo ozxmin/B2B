@@ -2,26 +2,41 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
-    name: {
+    nombreProducto: {
         type: String,
-        required: false,
-        minlength: 1,
+        required: true,
+        minlength: 3,
         trim: true //trims leading and trailing white spaces
     },
-    description: {
+    descripcion: {
         type: String,
-        required: false,
         minlength: 1,
         trim: true
     },
-    picture: {
+    ventaMinima: {
+        type: Number,
+        default: 1
+    },
+    creado: {
+        type: Date,
+        default: Date.now
+    },
+    costo: Number,
+    fichaTech: String,
+    inventario: {
+        type: Number,
+        min: 0
+    },
+    fotos: [{
         type: String,
         required: false
-    },
-    dateAdded: {
-        type: Number,
-        default: null
-      }
+    }],
+    //Disponible(?)
+    estado: Boolean,
+    categoria: String,
+    subCategoria: [{
+        type: String
+    }]
 });
 
 // const Product = mongoose.model('Products', ProductSchema);

@@ -12,20 +12,18 @@ const UserSchema = new Schema ({
         trim: true
     },
     //Valida que el nombre sea mayor de 2 caracteres
-    name: {
-        type: String,
-        validate: {
-            //Toma el nombre y regresa un booleano, si es falso se despliega mensaje
-            validator: (name) => name.length > 2,
-            message: 'El nombre debe ser mayor a dos caractares'
-        },
-        required: [true, 'El nombre se necesario.']
-    },
+    // name: {
+    //     type: String,
+    //     validate: {
+    //         //Toma el nombre y regresa un booleano, si es falso se despliega mensaje
+    //         validator: (name) => name.length > 2,
+    //         message: '{VALUE} debe ser mayor a dos caractares'
+    //     },
+    //     required: [true, 'El nombre se necesario.']
+    // },
     itemCount: Number,
     products: [ProductSchema]
 });
 
-
 const User = mongoose.model('UserModel', UserSchema);
-
 module.exports = User;
