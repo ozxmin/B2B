@@ -1,9 +1,12 @@
-const mongoose = require('mongoose');
-const ProductSchema = require('./product.js');
-const Schema = mongoose.Schema;
+var mongoose = require('mongoose');
+var validator = require('validator');
+var _ = require('lodash');
+//Locals
+var ProductSchema = require('./product.js');
+var Schema = mongoose.Schema;
 
 // object to configure schema
-const UserSchema = new Schema ({
+var UserSchema = new Schema ({
     user: {
         type: String,
         required: true,
@@ -11,19 +14,47 @@ const UserSchema = new Schema ({
         unique: true,
         trim: true
     },
-    //Valida que el nombre sea mayor de 2 caracteres
-    // name: {
-    //     type: String,
-    //     validate: {
-    //         //Toma el nombre y regresa un booleano, si es falso se despliega mensaje
-    //         validator: (name) => name.length > 2,
-    //         message: '{VALUE} debe ser mayor a dos caractares'
-    //     },
-    //     required: [true, 'El nombre se necesario.']
-    // },
-    itemCount: Number,
+    email: {
+        type: String,
+        required: true,
+        minlength: 6,
+        // unique: true,
+        trim: true,
+        validate: {
+            validator: (value) => {
+                return validator.isEmail(value);
+            },
+            message: '{VALUE} no es un email valido'
+        }
+    },
+    password: {
+        type: String,
+        // required: true,
+        minlength: 1
+    },
+    ubicacion: {
+        lon: Number,
+        lat: Number
+    },
+    rfc: {
+        type: String,
+        length: 6
+    },
+    empresa: String,
+    logotipo: String,
+    celular: {
+        type: Number,
+        // isMobilePhone(str, locale)
+    },
+    descripcion: String,
+    creado: {
+        type: Date,
+        default: Date.now
+    },
+    // nombre, correo, ubicación (longitud y latitud), Dirección, RFC, Empresa, correo,
+    // contraseña, logotipo, celular, descripción (opcional).
     products: [ProductSchema]
 });
 
-const User = mongoose.model('UserModel', UserSchema);
+var User = mongoose.model('UserModel', UserSchema);
 module.exports = User;

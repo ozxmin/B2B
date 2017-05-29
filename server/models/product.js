@@ -6,22 +6,22 @@ const ProductSchema = new Schema({
         type: String,
         required: true,
         minlength: 3,
-        trim: true //trims leading and trailing white spaces
-    },
-    descripcion: {
-        type: String,
-        minlength: 1,
         trim: true
     },
+    descripcion: String,
     ventaMinima: {
         type: Number,
-        default: 1
+        default: 1,
+        min: [0, 'la venta no puede ser menor a cero']
     },
-    creado: {
+    agregado: {
         type: Date,
         default: Date.now
     },
-    costo: Number,
+    precio: {
+        type: Number,
+        min: [1, 'el precio no puede ser menor a un peso']
+    },
     fichaTech: String,
     inventario: {
         type: Number,
@@ -34,9 +34,7 @@ const ProductSchema = new Schema({
     //Disponible(?)
     estado: Boolean,
     categoria: String,
-    subCategoria: [{
-        type: String
-    }]
+    subCategoria: [String]
 });
 
 // const Product = mongoose.model('Products', ProductSchema);
