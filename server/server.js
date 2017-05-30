@@ -96,9 +96,11 @@ app.delete('/borraUsuario/:id',(req, res) => {
     });
 });
 
+
 //Product API
 
-//add add products to a User by user ID
+//update products by user ID
+//add products to a User by user ID
 app.patch('/nuevoProducto/:id',(req, res) => {
     var id = req.params.id;
     var newProduct = _.pick(req.body,[
@@ -117,8 +119,28 @@ app.patch('/nuevoProducto/:id',(req, res) => {
     });
 });
 
-//update products by user ID
-// app.patch(/update)
+
+//Private Routes
+
+//sign-up route
+app.post('/creaUsuario', (req, res) => {
+    let body = _.pick(req.body, ['email', 'password','user']);
+    // we'll have the user from the req
+    let user = new User(body);
+    user.save().then(() => {
+        // we return the rusult from generateAuthToken (a promise)
+        return user.generateAuthToken();
+    }).then((token) => {
+        console.log('x-auth', token);
+        //we send the token in the header as custom header `x-header`
+        res.header('x-auth',token).send(user);
+    }).catch((e) => {
+        res.status(400).send(e);
+    });
+});
+
+
+
 
 //----FUNCTIONS---
 

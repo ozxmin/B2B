@@ -30,7 +30,7 @@ var UserSchema = new Schema ({
     },
     password: {
         type: String,
-        // required: true,
+        required: true,
         minlength: 1
     },
     ubicacion: {
@@ -52,8 +52,27 @@ var UserSchema = new Schema ({
         type: Date,
         default: Date.now
     },
-    products: [ProductSchema]
+    products: [ProductSchema],
+    tokens: [{
+        access: {
+            type: String,
+            required: true
+        },
+        token: {
+            type: String,
+            required: true
+        }
+    }]
 });
+
+
+//Overrides what gets sent back to the client in the json
+// UserSchema.methods.toJSON = function() {
+//     let user = this;
+//     //converts mongoose object to regular object
+//     let userObject = user.toObject();
+//     return _.pick(userObject, ['_id','email']);
+// }
 
 UserSchema.methods.test = function (newProduct) {
     let user = this;
@@ -83,7 +102,8 @@ UserSchema.statics.findByToken = function (token) {
     let User = this;
     let decoded;
     try {
-        decoded = jwt.verify(token, 'mySecret');
+        //secretValue has to be set as a variable
+        decoded = jwt.verify(token, 'secretValue');
     } catch (error) {
         // return new Promise((resolve, reject) => {
         //     reject('token not valid');
