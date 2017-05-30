@@ -8,6 +8,8 @@ const _ = require('lodash');
 const {mongoose} = require ('./db/mongoose');
 const Products = require('./models/product');
 const User = require('./models/user');
+const {authenticate} = require('./middleware/authenticate');
+
 
 
 //-------API ROUTES---
@@ -139,6 +141,10 @@ app.post('/creaUsuario', (req, res) => {
     });
 });
 
+//private route for logged in users
+app.get('/miEmpresa',authenticate, (req, res) => {
+    res.send(req.user);
+});
 
 
 

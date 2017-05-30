@@ -19,7 +19,7 @@ var UserSchema = new Schema ({
         type: String,
         required: true,
         minlength: 6,
-        // unique: true,
+        unique: true,
         trim: true,
         validate: {
             validator: (value) => {
@@ -88,7 +88,7 @@ UserSchema.methods.generateAuthToken = function () {
     var user = this;
     // random value for access
     var access = 'auth';
-    var token = jwt.sign({_id: user._id.toHexString(), access}, 'mySecret').toString();
+    var token = jwt.sign({_id: user._id.toHexString(), access}, 'secretValue').toString();
 
     user.tokens.push({access, token});
     // so we can chain another then on server.js
@@ -98,7 +98,7 @@ UserSchema.methods.generateAuthToken = function () {
 };
 
 
-UserSchema.statics.findByToken = function (token) {
+UserSchema.statics.findByToken = function(token) {
     let User = this;
     let decoded;
     try {
@@ -137,4 +137,4 @@ UserSchema.statics.findByToken = function (token) {
 
 
 var User = mongoose.model('UserModel', UserSchema);
-module.exports = User;
+module.exports = {User};
