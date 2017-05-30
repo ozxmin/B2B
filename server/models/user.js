@@ -1,6 +1,7 @@
 var mongoose = require('mongoose');
 var validator = require('validator');
 var _ = require('lodash');
+const jwt = require('jsonwebtoken');
 //Locals
 var ProductSchema = require('./product.js');
 var Schema = mongoose.Schema;
@@ -51,10 +52,69 @@ var UserSchema = new Schema ({
         type: Date,
         default: Date.now
     },
-    // nombre, correo, ubicación (longitud y latitud), Dirección, RFC, Empresa, correo,
-    // contraseña, logotipo, celular, descripción (opcional).
     products: [ProductSchema]
 });
+
+UserSchema.methods.test = function (newProduct) {
+    let user = this;
+    user.product.push(newPoduct);
+    return user.save().then(() => {
+        return token;
+    });
+    console.log(user);
+}
+
+UserSchema.methods.generateAuthToken = function () {
+    //`this` stores the individual document
+    var user = this;
+    // random value for access
+    var access = 'auth';
+    var token = jwt.sign({_id: user._id.toHexString(), access}, 'mySecret').toString();
+
+    user.tokens.push({access, token});
+    // so we can chain another then on server.js
+    return user.save().then(() => {
+        return token;
+    });
+};
+
+
+UserSchema.statics.findByToken = function (token) {
+    let User = this;
+    let decoded;
+    try {
+        decoded = jwt.verify(token, 'mySecret');
+    } catch (error) {
+        // return new Promise((resolve, reject) => {
+        //     reject('token not valid');
+        // });
+        return Promise.reject();
+    }
+    return User.findOne({
+        _id: decoded._id,
+        //lets us query a nested value
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+};
+
+
+
+// UserSchema.methods.addProduct = function (product) {
+//     //`this` stores the individual document
+//     console.log('From Schema');
+//     var user = this;
+//     //new date
+//     user.prudct.push({product});
+//
+//     console.log(product);
+//     // so we can chain another then on server.js
+//     return user.save().then((savedProduct) => {
+//         return savedProduct;
+//     });
+// };
+
+
 
 var User = mongoose.model('UserModel', UserSchema);
 module.exports = User;
