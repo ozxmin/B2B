@@ -14,4 +14,6 @@ let authenticate = (req, res, next) => {
     });
 };
 
+// let authenticatedUser = ()
+
 module.exports = {authenticate};

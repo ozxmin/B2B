@@ -28,12 +28,12 @@ var UserSchema = new Schema ({
             message: '{VALUE} no es un email valido'
         }
     },
-    //DIRECCION
     password: {
         type: String,
         required: true,
         minlength: 1
     },
+    direccion: String,
     ubicacion: {
         lon: Number,
         lat: Number
@@ -50,7 +50,7 @@ var UserSchema = new Schema ({
     },
     descripcion: String,
     creado: {
-        //unix date 
+        //unix date
         type: Date,
         default: Date.now
     },
