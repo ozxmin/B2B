@@ -4,7 +4,7 @@ let authenticate = (req, res, next) => {
     let token = req.header('x-auth');
     User.findByToken(token).then((user) => {
         if (!user) {
-            return Promise.reject('Usuario no valido'); // res.status(401).send(error);
+            return Promise.reject('authenticate: Usuario no valido'); // res.status(401).send(error);
         }
         req.user = user;
         req.token = token;

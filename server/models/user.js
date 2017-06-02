@@ -76,16 +76,20 @@ var UserSchema = new Schema ({
 //     return _.pick(userObject, ['_id','email']);
 // }
 
-UserSchema.methods.test = function (newProduct) {
-    let user = this;
-    user.product.push(newPoduct);
-    return user.save().then(() => {
-        return token;
-    });
-    console.log(user);
+UserSchema.methods.getProduct = function(id) {
+    let usuario = this;
+    let productId = mongoose.Types.ObjectId(id);
+    let productoEncontrado;
+    productoEncontrado = usuario.products.id(productId);
+    if (!productoEncontrado) {
+        return Promise.reject({ "message":"producto no encontrado"});
+    }
+    return Promise.resolve(productoEncontrado);
 }
 
-UserSchema.methods.generateAuthToken = function () {
+
+//instance method
+UserSchema.methods.generateAuthToken = function() {
     //`this` stores the individual document
     var user = this;
     // random value for access
@@ -100,6 +104,7 @@ UserSchema.methods.generateAuthToken = function () {
 };
 
 
+// Schema method
 UserSchema.statics.findByToken = function(token) {
     let User = this;
     let decoded;
@@ -119,22 +124,6 @@ UserSchema.statics.findByToken = function(token) {
         'tokens.access': 'auth'
     });
 };
-
-
-
-// UserSchema.methods.addProduct = function (product) {
-//     //`this` stores the individual document
-//     console.log('From Schema');
-//     var user = this;
-//     //new date
-//     user.prudct.push({product});
-//
-//     console.log(product);
-//     // so we can chain another then on server.js
-//     return user.save().then((savedProduct) => {
-//         return savedProduct;
-//     });
-// };
 
 
 
