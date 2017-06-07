@@ -9,12 +9,12 @@ const {User} = require('../models/user');
 const {authenticate} = require('../middleware/authenticate');
 
 
-module.exports = function(app) {
+module.exports = function(route) {
 
 //-------------------Private User Routes-------------------
 
     //crear cuenta, genera token que será usado en las rutas privadas
-    app.post('/creaUsuario', (req, res) => {
+    route.post('/creaUsuario', (req, res) => {
         const fields = _.pick(req.body,[
             'user','email','password', 'ubicacion','rfc','empresa',
             'logotipo','celular','descripcion'
@@ -25,31 +25,33 @@ module.exports = function(app) {
             // we return the rusult from generateAuthToken (a promise)
             return user.generateAuthToken();
         }).then((token) => {
-            const confirmationFields = _.pick(user,['user','email',
-            'ubicacion','rfc','empresa','logotipo','celular','descripcion']);
+            const confirmationFields = _.pick(user, [
+                'user','email', 'ubicacion','rfc','empresa','logotipo',
+                'celular','descripcion', 'direccion'
+            ]);
             //we send the token in the header as custom header `x-header`
             //needed for auth
-            res.status(201).header('x-auth',token).send(confirmationFields);
+            res.status(201).header('x-auth', token).send(confirmationFields);
         }).catch((e) => {
             res.status(400).send(e);
         });
     });
 
     //despliega campos `publicos` del usuario
-    app.get('/miUsuario', authenticate, (req, res) => {
-        const usuario = _.pick(req.user,[
-            'user','email',, 'direccion', 'ubicacion','rfc','empresa',
+    route.get('/miUsuario', authenticate, (req, res) => {
+        const usuario = _.pick(req.user, [
+            'user','email', 'direccion', 'ubicacion','rfc','empresa',
             'logotipo','celular','descripcion', 'creado'
         ]);
         res.send(usuario);
     });
 
     //recibe campos a actualizar del usuario, solo los permitidos serán actualizados
-    app.patch('/actualizaMiUsuario', authenticate,(req, res) => {
+    route.patch('/actualizaMiUsuario', authenticate,(req, res) => {
         //_.pick allow us to choose which properties are available for update
         const datosUsuario = _.pick(req.body,[
             'user','email','password', 'ubicacion','rfc','empresa',
-            'logotipo','celular','descripcion'
+            'logotipo','celular','descripcion', 'direccion'
         ]);
         let usuario = req.user;
         usuario.update({$set: datosUsuario}, {new: true}).then((usuario) => {
@@ -60,7 +62,7 @@ module.exports = function(app) {
     });
 
     //borra usuario
-    app.delete('/borraMiUsuario', authenticate, (req, res) => {
+    route.delete('/borraMiUsuario', authenticate, (req, res) => {
         let usuario = req.user;
         usuario.remove({usuario: '._id'}).then((usuario) => {
             res.status(205).send(usuario);
@@ -73,15 +75,15 @@ module.exports = function(app) {
 //--------------Private Product API----------------------
 
     //Devuelve todos los productos de un usuario
-    app.get('/misProductos',authenticate, (req, res) => {
+    route.get('/misProductos',authenticate, (req, res) => {
         res.send(req.user.products);
     });
 
     //Crea un producto nuevo y lo agrega a su usuario
-    app.patch('/agregaProducto', authenticate, (req, res) => {
+    route.patch('/agregaProducto', authenticate, (req, res) => {
         const newProduct = _.pick(req.body,[
             'nombreProducto','descripcion','ventaMinima',
-            'precio','fichaTech','fotos','categoria','subCategoria'
+            'precio','fichaTech','fotos','categoria','subcategoria', 'inventario'
         ]);
         const usuario = req.user;
         usuario.update({$push: {products: newProduct}}, {new: true}).then((usuario) => {
@@ -91,8 +93,8 @@ module.exports = function(app) {
         });
     });
 
-    //]Devuelve producto correspondiente del usuario dado un id
-    app.get('/muestraProducto/:id', authenticate, (req, res) => {
+    //Devuelve producto correspondiente del usuario dado un id
+    route.get('/muestraProducto/:id', authenticate, (req, res) => {
         isThisValidId(req.params.id, res);
         const usuario = req.user;
         usuario.getProduct(req.params.id).then((producto) => {
@@ -103,22 +105,21 @@ module.exports = function(app) {
     });
 
     //borra producto
-    app.delete('/borraProducto/:id', authenticate, (req, res) => {
+    route.delete('/borraProducto/:id', authenticate, (req, res) => {
         const usuario = req.user;
         isThisValidId(req.params.id, res);
         usuario.getProduct(req.params.id).then((producto) => {
             producto.remove().then(() => {
-                usuario.save().then((usuario) => {
-                });
+                usuario.save().then((usuario) => {});
             });
-            res.status(204).send();
+            res.status(204).send({"message": "producto borrado"});
         }).catch((error) => {
             res.status(400).send(error);
         });
     });
 
     //edita producto 205 Reset Content
-    app.patch('/editaProducto/:id', authenticate, (req, res) => {
+    route.patch('/editaProducto/:id', authenticate, (req, res) => {
         isThisValidId(req.params.id, res);
         let usuario = req.user;
         const camposProducto = _.pick(req.body,[
@@ -133,8 +134,25 @@ module.exports = function(app) {
         });
     });
 
-    app.listen(3000,() => {
-        console.log('Listening on port 3000');
+    //Post /users/login
+    // devuelve un token y lo agrega a la BD
+    route.post('/login', (req, res) => {
+        let credentials = _.pick(req.body, ['user', 'password']);
+
+        User.findByCredentials(credentials.user, credentials.password).then((usuario) => {
+            return usuario.generateAuthToken().then((token) => {
+                res.header('x-auth', token).send(usuario);
+            });
+        }).catch((e) => {
+            res.status(400).send(e);
+        });
+    });
+
+    //remueve el token utilizado cuando se llama este api
+    route.delete('/logout', authenticate, (req, res) => {
+        req.user.removeToken(req.token).then(() => {
+            res.status(204).send({"message": "logged-out"});
+        }, () => {});
     });
 
     const isThisValidId = ((id, res) => {
@@ -150,7 +168,7 @@ module.exports = function(app) {
 //Estas rutas fueron/son SOLO para propositos de 'testeo'
 //funcionan con ids generalmente
 
-// app.post('/nuevoUsuario', (req, res) => {
+// route.post('/nuevoUsuario', (req, res) => {
 //     // console.log(req.body.products);
 //     const body = _.pick(req.body,[
 //         'user','email','password', 'ubicacion','rfc','empresa',
@@ -166,7 +184,7 @@ module.exports = function(app) {
 // });
 //
 // //Test
-// app.post('/fullSchema', (req, res) => {
+// route.post('/fullSchema', (req, res) => {
 //     // console.log(req.body.products);
 //     const body = _.pick(req.body,[
 //         'user','email','password', 'ubicacion','rfc','empresa',
@@ -182,7 +200,7 @@ module.exports = function(app) {
 // });
 //
 // // query user by ID
-// app.get('/usuario/:id',(req, res) => {
+// route.get('/usuario/:id',(req, res) => {
 //     var id = req.params.id;
 //     isThisValidId(id,res);
 //     if(!ObjectID.isValid(id)){
@@ -197,7 +215,7 @@ module.exports = function(app) {
 // });
 //
 // //Update user by ID
-// app.patch('/usuario/:id',(req, res) => {
+// route.patch('/usuario/:id',(req, res) => {
 //     let id = req.params.id;
 //     //_.pick allow us to choose which properties are available for update
 //     const body = _.pick(req.body,[
@@ -214,7 +232,7 @@ module.exports = function(app) {
 // });
 //
 // // delete user by ID
-// app.delete('/borraUsuario/:id',(req, res) => {
+// route.delete('/borraUsuario/:id',(req, res) => {
 //     let id = req.params.id;
 //     isThisValidId(id,res);
 //     User.findByIdAndRemove(id).then((usuario) => {
@@ -232,7 +250,7 @@ module.exports = function(app) {
 // //--------------Product API----------------
 //
 //     //given a user ID update/adds products
-//     app.patch('/nuevoProducto/:id',(req, res) => {
+//     route.patch('/nuevoProducto/:id',(req, res) => {
 //         const id = req.params.id;
 //         const newProduct = _.pick(req.body,[
 //             'nombreProducto','descripcion','ventaMinima',
@@ -250,7 +268,7 @@ module.exports = function(app) {
 //     });
 //
 //     //Deletes product by ID
-//     app.delete('/borraProducto/:id', (req, res) => {
+//     route.delete('/borraProducto/:id', (req, res) => {
 //         let id = req.params.id;
 //         if (!ObjectID.isValid(id)) {
 //             return res.status(404).send();
@@ -273,7 +291,7 @@ module.exports = function(app) {
 //         }
 //     });
 //
-//     //falls through to catch in app.delete
+//     //falls through to catch in route.delete
 //     const isThisInCollection = function(usuario, res) {
 //         if(!usuario) {
 //             return res.status(409).send({"message":"usuario no encontrado"})

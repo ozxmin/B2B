@@ -34,7 +34,10 @@ const ProductSchema = new Schema({
     //Disponible(?)
     estado: Boolean,
     categoria: String,
-    subCategoria: [String]
+    subcategoria: [{
+        type: String,
+        required: false
+    }]
 });
 
 // const Product = mongoose.model('Products', ProductSchema);

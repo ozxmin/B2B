@@ -8,5 +8,9 @@ let app = express();
 //middleware configuration, which will parse the request
 app.use(bodyParser.json());
 
-//Handles routes
 require('./routes/routes')(app);//
+
+app.listen(3000,() => {
+    console.log('Listening on port 3000');
+});
+//Handles routes

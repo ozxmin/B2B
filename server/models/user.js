@@ -32,12 +32,14 @@ var UserSchema = new Schema ({
     password: {
         type: String,
         required: true,
-        minlength: 1
+        minlength: 6
     },
     direccion: String,
     ubicacion: {
-        lon: Number,
-        lat: Number
+        type: {
+            lon: Number,
+            lat: Number
+        }
     },
     rfc: {
         type: String,
@@ -104,6 +106,57 @@ UserSchema.methods.generateAuthToken = function() {
     });
 };
 
+// Schema methods
+
+UserSchema.statics.findByToken = function(token) {
+    let User = this;
+    let decoded;
+    try {
+        //secretValue has to be set as a variable
+        decoded = jwt.verify(token, 'secretValue');
+    } catch (error) {
+        return Promise.reject('bad token');
+    }
+    return User.findOne({
+        _id: decoded._id,
+        //lets us query a nested value
+        'tokens.token': token,
+        'tokens.access': 'auth'
+    });
+};
+
+
+UserSchema.methods.removeToken = function (token) {
+    let user = this;
+    return user.update({
+        $pull:{ tokens: {
+            token: token
+        }}
+    });
+};
+
+
+UserSchema.statics.findByCredentials = function (user, password) {
+    let User = this;
+    return User.findOne({user}).then((usuario) => {
+        if (!usuario) {
+            return Promise.reject('usuario no encontrado');
+        }
+        //bcrypct doesnot support promises so we wrap it up to keep working
+        //with promises
+        return new Promise((resolve, reject) => {
+            bcrypt.compare(password, usuario.password, (err, res) => {
+                if (res === true) {
+                    resolve(usuario);
+                } else {
+                    reject('contraseña no valida');
+                }
+            });
+        });
+    });
+};
+
+
 UserSchema.pre('save', function(next) {
     let user = this;
     //prevets to hash un-modified passwords when saving docs
@@ -114,35 +167,12 @@ UserSchema.pre('save', function(next) {
                 next();
             });
         });
-    }  {
+    } else {
         //not modified
         next();
     }
 
 });
-
-
-// Schema methods
-UserSchema.statics.findByToken = function(token) {
-    let User = this;
-    let decoded;
-    try {
-        //secretValue has to be set as a variable
-        decoded = jwt.verify(token, 'secretValue');
-    } catch (error) {
-        // return new Promise((resolve, reject) => {
-        //     reject('token not valid');
-        // });
-        return Promise.reject();
-    }
-    return User.findOne({
-        _id: decoded._id,
-        //lets us query a nested value
-        'tokens.token': token,
-        'tokens.access': 'auth'
-    });
-};
-
 
 
 var User = mongoose.model('UserModel', UserSchema);
