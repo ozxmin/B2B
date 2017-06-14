@@ -6,6 +6,7 @@ const ProductSchema = new Schema({
         type: String,
         required: true,
         minlength: 3,
+        unique: true,
         trim: true
     },
     descripcion: String,
@@ -20,9 +21,14 @@ const ProductSchema = new Schema({
     },
     precio: {
         type: Number,
+        validate: {
+            validator: (precio) => precio > 0,
+            message: 'El precio debe ser mayor a 0'
+        },
         min: [1, 'el precio no puede ser menor a un peso']
     },
     fichaTech: String,
+    //virtual type
     inventario: {
         type: Number,
         min: 0
@@ -33,13 +39,21 @@ const ProductSchema = new Schema({
     }],
     //Disponible(?)
     estado: Boolean,
-    categoria: String,
+    categoria: {
+        type: String,
+        enum: ['categoria1', 'categoria2'],
+        default: 'categoria1'
+    },
     subcategoria: [{
         type: String,
         required: false
-    }]
+    }],
+    vendedor: {
+        type: Schema.Types.ObjectId,
+        ref: 'Users'
+    }
 });
 
-// const Product = mongoose.model('Products', ProductSchema);
+const Product = mongoose.model('Products', ProductSchema);
 
-module.exports = ProductSchema;
+module.exports = Product;

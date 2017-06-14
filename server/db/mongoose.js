@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-//uses builtin promises
+//uses builtin promises ES6
 mongoose.Promise = global.Promise;
 let port = '27017'
 mongoose.connect(`mongodb://localhost:${port}/B2BUsers`).then(() => {

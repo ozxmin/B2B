@@ -4,10 +4,13 @@ const {ObjectID} = require('mongodb');
 
 //Local imports
 const {mongoose} = require ('../db/mongoose');
-const {Products} = require('../models/product');
+const Product = require('../models/product');
 const {User} = require('../models/user');
 const {authenticate} = require('../middleware/authenticate');
-
+console.log('USER=========');
+console.log(User);
+console.log('Product=========');
+console.log(Product);
 
 module.exports = function(route) {
 
@@ -74,6 +77,7 @@ module.exports = function(route) {
 
 //--------------Private Product API----------------------
 
+
     //Devuelve todos los productos de un usuario
     route.get('/misProductos',authenticate, (req, res) => {
         res.send(req.user.products);
@@ -86,12 +90,25 @@ module.exports = function(route) {
             'precio','fichaTech','fotos','categoria','subcategoria', 'inventario'
         ]);
         const usuario = req.user;
+        const producto = new Product(newProduct)
         usuario.update({$push: {products: newProduct}}, {new: true}).then((usuario) => {
             res.status(201).send(usuario);
         }).catch((error) => {
             res.status(400).send(error);
         });
     });
+    // route.patch('/agregaProducto', authenticate, (req, res) => {
+    //     const newProduct = _.pick(req.body,[
+    //         'nombreProducto','descripcion','ventaMinima',
+    //         'precio','fichaTech','fotos','categoria','subcategoria', 'inventario'
+    //     ]);
+    //     const usuario = req.user;
+    //     usuario.update({$push: {products: newProduct}}, {new: true}).then((usuario) => {
+    //         res.status(201).send(usuario);
+    //     }).catch((error) => {
+    //         res.status(400).send(error);
+    //     });
+    // });
 
     //Devuelve producto correspondiente del usuario dado un id
     route.get('/muestraProducto/:id', authenticate, (req, res) => {
@@ -156,7 +173,7 @@ module.exports = function(route) {
     });
 
     const isThisValidId = ((id, res) => {
-        if(!ObjectID.isValid(id)){
+        if(!ObjectID.isValid(id)) {
             return res.status(408).send({ "message":"ID no valido" });
         }
     });
@@ -165,7 +182,7 @@ module.exports = function(route) {
 
 ///---------------FIN---------------------------------------
 
-//Estas rutas fueron/son SOLO para propositos de 'testeo'
+//Estas rutas fueron/son SOLO para propositos de 'testeouuu
 //funcionan con ids generalmente
 
 // route.post('/nuevoUsuario', (req, res) => {

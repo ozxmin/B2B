@@ -1,14 +1,14 @@
-var mongoose = require('mongoose');
-var validator = require('validator');
-var _ = require('lodash');
+const mongoose = require('mongoose');
+const validator = require('validator');
+const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 //Locals
-var ProductSchema = require('./product.js');
-var Schema = mongoose.Schema;
+const Product = require('./product.js');
+const Schema = mongoose.Schema;
 
 // object to configure schema
-var UserSchema = new Schema ({
+const UserSchema = new Schema ({
     user: {
         type: String,
         required: true,
@@ -57,7 +57,10 @@ var UserSchema = new Schema ({
         type: Date,
         default: Date.now
     },
-    products: [ProductSchema],
+    productos: [{
+        type: Schema.Types.ObjectId,
+        ref: 'products'
+    }],
     tokens: [{
         access: {
             type: String,
@@ -69,6 +72,8 @@ var UserSchema = new Schema ({
         }
     }]
 });
+
+
 
 
 //Overrides what gets sent back to the client in the json
@@ -171,9 +176,8 @@ UserSchema.pre('save', function(next) {
         //not modified
         next();
     }
-
 });
 
 
-var User = mongoose.model('UserModel', UserSchema);
+let User = mongoose.model('Users', UserSchema);
 module.exports = {User};
