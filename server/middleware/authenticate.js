@@ -1,4 +1,4 @@
-var {User} = require('./../models/user');
+const {User} = require('./../models/user');
 
 let authenticate = (req, res, next) => {
     let token = req.header('x-auth');
@@ -13,8 +13,5 @@ let authenticate = (req, res, next) => {
         res.status(401).send(`catch: ${error}`);
     });
 };
-
-
-// let authenticatedUser = ()
 
 module.exports = {authenticate};

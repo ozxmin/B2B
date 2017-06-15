@@ -57,9 +57,9 @@ const UserSchema = new Schema ({
         type: Date,
         default: Date.now
     },
-    productos: [{
+    productosUsuario: [{
         type: Schema.Types.ObjectId,
-        ref: 'products'
+        ref: 'Productos'
     }],
     tokens: [{
         access: {
@@ -73,30 +73,31 @@ const UserSchema = new Schema ({
     }]
 });
 
+//=========================Instance Methods=========================
 
-
-
-//Overrides what gets sent back to the client in the json
-// UserSchema.methods.toJSON = function() {
-//     let user = this;
-//     //converts mongoose object to regular object
-//     let userObject = user.toObject();
-//     return _.pick(userObject, ['_id','email']);
-// }
-
+//Encuentra el producto de un usuario por su ID
 UserSchema.methods.getProduct = function(id) {
     let usuario = this;
-    let productId = mongoose.Types.ObjectId(id);
+    // let productId = mongoose.Types.ObjectId(id);
+    let productId = Schema.Types.ObjectId(id);
+
+    let userProducts = mongoose.model('Productos');
+    userProducts.find({_id: mongoose.Types.ObjectId(id)}).then((producto) => {
+        console.log(producto);
+        return producto
+    }).catch(err => {
+        return err;
+    })
+
     let productoEncontrado;
     productoEncontrado = usuario.products.id(productId);
     if (!productoEncontrado) {
-        return Promise.reject({ "message":"producto no encontrado"});
+        return Promise.reject('producto no encontrado');
     }
     return Promise.resolve(productoEncontrado);
 }
 
-
-//instance method
+//Genera un Token de autenticacion
 UserSchema.methods.generateAuthToken = function() {
     //`this` stores the individual document
     var user = this;
@@ -111,8 +112,20 @@ UserSchema.methods.generateAuthToken = function() {
     });
 };
 
-// Schema methods
+//Remueve token de usuario cuando hace logout
+UserSchema.methods.removeToken = function (token) {
+    let user = this;
+    return user.update({
+        $pull:{ tokens: {
+            token: token
+        }}
+    });
+};
 
+
+//------ Schema Methods--------
+
+//Busca a un usuario por token
 UserSchema.statics.findByToken = function(token) {
     let User = this;
     let decoded;
@@ -130,17 +143,7 @@ UserSchema.statics.findByToken = function(token) {
     });
 };
 
-
-UserSchema.methods.removeToken = function (token) {
-    let user = this;
-    return user.update({
-        $pull:{ tokens: {
-            token: token
-        }}
-    });
-};
-
-
+//Busca a un usuario dado su usario y password
 UserSchema.statics.findByCredentials = function (user, password) {
     let User = this;
     return User.findOne({user}).then((usuario) => {
@@ -161,7 +164,7 @@ UserSchema.statics.findByCredentials = function (user, password) {
     });
 };
 
-
+//Previene el re-hash de un password
 UserSchema.pre('save', function(next) {
     let user = this;
     //prevets to hash un-modified passwords when saving docs
@@ -178,6 +181,22 @@ UserSchema.pre('save', function(next) {
     }
 });
 
+UserSchema.pre('remove', function(next) {
+    let user = this;
+    let userProducts = mongoose.model('Productos');
+    userProducts.remove({_id: {$in: user.productosUsuario}}).then(() => next());
+})
+
 
 let User = mongoose.model('Users', UserSchema);
 module.exports = {User};
+
+
+
+//Overrides what gets sent back to the client in the json
+// UserSchema.methods.toJSON = function() {
+//     let user = this;
+//     //converts mongoose object to regular object
+//     let userObject = user.toObject();
+//     return _.pick(userObject, ['_id','email']);
+// }

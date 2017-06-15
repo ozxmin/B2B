@@ -2,18 +2,21 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ProductSchema = new Schema({
+    vendedor: {
+        type: Schema.Types.ObjectId,
+        ref: 'Users'
+    },
     nombreProducto: {
         type: String,
         required: true,
         minlength: 3,
-        unique: true,
         trim: true
     },
     descripcion: String,
     ventaMinima: {
         type: Number,
         default: 1,
-        min: [0, 'la venta no puede ser menor a cero']
+        min: [1, 'la venta no puede ser menor a uno']
     },
     agregado: {
         type: Date,
@@ -47,13 +50,9 @@ const ProductSchema = new Schema({
     subcategoria: [{
         type: String,
         required: false
-    }],
-    vendedor: {
-        type: Schema.Types.ObjectId,
-        ref: 'Users'
-    }
+    }]
 });
 
-const Product = mongoose.model('Products', ProductSchema);
+const Product = mongoose.model('Productos', ProductSchema);
 
 module.exports = Product;
