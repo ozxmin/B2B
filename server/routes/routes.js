@@ -63,9 +63,12 @@ module.exports = function(route) {
     route.get('/b2b/:user', (req, res) => {
         User.findOne({user: req.params.user}).then((usuario) => {
             const perfilPublico = _.pick(usuario, datosPublicosUsuario);
+            if(!usuario) {
+                res.status(404).send({"message":"usuario no encontrado"});
+            }
             res.status(200).send(perfilPublico);
         }).catch(err => {
-            res.status(404).send({"message":"usuario no encontrado"});
+            res.status(404).send(err);
         });
     });
 
@@ -105,7 +108,7 @@ module.exports = function(route) {
 
     const editablesDeProducto = [
         'nombreProducto','descripcion','ventaMinima',
-        'precio','fichaTech','fotos', 'categoria','subcategoria', 'inventario'
+        'precio','fichaTech','fotos', 'categoria','subcategorias', 'inventario'
     ];
 
     //Devuelve todos los productos de un usuario
@@ -172,6 +175,7 @@ module.exports = function(route) {
     });
 
     //Muestra todos los productos de una categoria
+        //Agrega validacion de subcategoria y categorias en .agregaProducto()
 
     //Muestra todos los productos de un usuario
 
