@@ -174,6 +174,16 @@ module.exports = function(route) {
         }).catch(err => { res.status(404).send(err); });
     });
 
+    route.get('/categoria/:categoria', (req, res) => {
+        Product.find({categoria: req.params.categoria}).then((productos) => {
+            if (productos.length < 1) {
+                res.status(404).send({message: "producto no encontrado"});
+            } else  { res.status(200).send(productos); }
+        }).catch(err => {
+            res.status(404).send(err);
+        });
+    });
+
     //Muestra todos los productos de una categoria
         //Agrega validacion de subcategoria y categorias en .agregaProducto()
 
