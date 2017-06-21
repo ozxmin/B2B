@@ -1,0 +1,13 @@
+<menu-app
+  [title]="title"
+  (flagL) = "ContentFlag($event)">
+</menu-app>
+<div class="jumbotron">
+  <div class="container-fluid">
+    <router-outlet></router-outlet>
+  </div>
+  <hr>
+  <footer>
+    <p>&copy; {{year}} {{title}}, Inc.</p>
+  </footer>
+</div>
