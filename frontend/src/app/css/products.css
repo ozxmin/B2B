@@ -1,0 +1,25 @@
+.img-product{
+  width: 100%;
+}
+.caption{
+  margin: 0px;
+  margin-top: 20px;
+}
+.product-cart{
+  border: 2px solid black;
+}
+.menu-product{
+  width: 20%;
+}
+.content-product{
+  width: 75%;
+}
+.categoria-titulo{
+  color: #282f71;
+  font-size: 1.1em;
+  text-transform: uppercase;
+}
+.categoria-titulo:hover{
+  color: #585966;
+  font-size: 1.2em;
+}
