@@ -174,22 +174,33 @@ module.exports = function(route) {
         }).catch(err => { res.status(404).send(err); });
     });
 
+    //Devuelve todos los productos de una categoria
+    // las categorias con espacios deben ser URL encoded
+    //Ejemplo:
     route.get('/categoria/:categoria', (req, res) => {
         Product.find({categoria: req.params.categoria}).then((productos) => {
             if (productos.length < 1) {
-                res.status(404).send({message: "producto no encontrado"});
+                res.status(404).send({message: `no se encontraron productos en '${req.params.subcategoria}'`});
             } else  { res.status(200).send(productos); }
         }).catch(err => {
             res.status(404).send(err);
         });
     });
 
-    //Muestra todos los productos de una categoria
-        //Agrega validacion de subcategoria y categorias en .agregaProducto()
+    //Devuelve los productos de una subcategoria
+    //Ejemplo de uso: localhost:3000/categoria/Fibras/Fibra%20de%20lana
+    route.get('/categoria/:categoria/:subcategoria', (req, res) => {
+        Product.find({categoria: req.params.categoria}).then((productos) => {
+            if (!productos[req.params.subcategoria]) {
+                res.status(404).send({message: `no se encontraron productos en '${req.params.subcategoria}'`});
+            } else  { res.status(200).send(productos); }
+        }).catch(err => {
+            res.status(404).send(err);
+        });
+    });
 
-    //Muestra todos los productos de un usuario
-
-
+    //Utils
+    //-----
     const isThisValidId = ((id, res) => {
         if(!ObjectID.isValid(id)) {
             return res.status(408).send({ "message":"ID no valido" });
