@@ -2,6 +2,8 @@ import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
+
+// Archivo de configuracion
 import { data } from './global';
 
 @Injectable()
@@ -10,7 +12,9 @@ export class UserService{
 
     public url : string;
 
+    // Inicializando servicios HTTP
     constructor ( private _http : Http) {
+        // Opteniendo ruta del API
         this.url = data.url;
     }
     // llamada al API para cerrar sesión
@@ -35,6 +39,7 @@ export class UserService{
         let headers = new Headers;
         headers.append("Content-Type","application/json");
 
+        // Envio de datos
         return this._http.post(this.url+"creaUsuario",params,{headers:headers}).map(res=>res.json());
     }
     // llamada al API para logear a un usuario registrado
@@ -49,6 +54,7 @@ export class UserService{
         let headers = new Headers;
         headers.append("Content-Type","application/json");
 
+        // Envio de datos
         return this._http.post(this.url+"login",params,{headers:headers}).map(res=>res.json());
     }
 

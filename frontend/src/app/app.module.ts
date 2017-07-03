@@ -5,6 +5,7 @@ import { HttpModule } from '@angular/http';
 
 // Declaració de el manejador de rutas
 import { appRoutingProviders, routing } from './app.routing';
+// Declaración Componente principal
 import { AppComponent } from './app.component';
 // Declaración Componente menu
 import { MenuComponent } from './components/menu.component';

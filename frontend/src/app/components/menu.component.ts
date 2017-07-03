@@ -19,14 +19,19 @@ export class MenuComponent implements OnInit {
   public password = null;
   public alertMensaje = null;
   private token : any;
+  // Iniciando Servicio de usuario
   constructor(private _router: Router,private _userService: UserService) {
+    // Creando objeto para logear usuario
     this.loginUser = new User('','','','','','');
   }
   ngOnInit() {}
+
+  // Login de usuario
   login(){
+    // Mandando datos de usuario para logear al servicio 
     this._userService.loginUsuario(this.loginUser).subscribe(
       data => {
-        //console.log(JSON.stringify(data))
+        // Resiviendo y guardando token
         this.token = data.tokens[data.tokens.length-1].token;
         console.log(this.token);
       },
@@ -37,10 +42,12 @@ export class MenuComponent implements OnInit {
   flagLog(flag){
     this.flagLogin = flag;
   }
+
+  // Cerrando sesion de usuario
   logout(){
+    // Peticion para eliminar token por medio del servicio usuario
     this._userService.logoutUser(this.token).subscribe(
       data => {
-        //console.log(JSON.stringify(data))
         this.token = null;
         this.loginUser.name = null;
         this.loginUser.password = null;
@@ -49,25 +56,9 @@ export class MenuComponent implements OnInit {
       error => alert(error+" *"),
       () => console.log("fin")
     );
-    // this._router.navigate(['/']);
   }
-  verificaCorreo(email, password){
-    // Conexion con el API
-    let usuario = SIMULA.usuario;
-    let userLog = null;
-    let fcorreo = 0;
-    let fpassword = 0;
-    usuario.forEach(user => {
-        if(user.correo == email){
-          userLog = user;
-          fcorreo = 1;
-        }
-    });
-    if(password == userLog.password){
-      fpassword = 1;
-    }
-    return fcorreo * fpassword;
-  }
+  
+  // Busqueda de productos
   buscar(busqueda){
     console.log(busqueda);
   }
