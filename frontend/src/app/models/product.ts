@@ -1,3 +1,4 @@
+// Modelo producto para empatar con el modelo de la base de datos
 export class Product {
     constructor(
       public id_producto: string,

@@ -1,3 +1,4 @@
+// Model de Usuario para empatar con la base de datos
 export class User {
     constructor(
       public id_user: string,
@@ -8,18 +9,3 @@ export class User {
       public type: string
     ){}
 }
-/*
-public user -> id?
-public email -> email
-public password -> password
-public direccion -> FALTA
-public ubicacion -> FALTA obj
-public rfc -> FALTA
-public empresa -> name
-public logotipo -> FALTA
-public celular -> phone
-public descripcion -> FALTA
-public creado -> FALTA
-public products -> FALTA obj
-public tokens -> FALTA obj
-*/

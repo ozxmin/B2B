@@ -15,6 +15,8 @@ export class ProductsComponent implements OnInit {
     this.productos = SIMULA.productos;
     this.categorias = this.crearCategorias(SIMULA.catergorias);
   }
+
+  // Crea menu categorias << provicional >>
   crearCategorias(categorias){
     let listaCategorias = [];
     let cat = null;

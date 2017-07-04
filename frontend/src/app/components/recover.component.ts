@@ -17,6 +17,7 @@ export class RecoverComponent implements OnInit {
   recover(){
     this.flagRecover.emit(false);
   }
+  // Llamada al servicio para recuperar << pendiente >>
   recoverConfirm(email){
     if (!email.value) {
         this.message = {txt:'No ha introducido un correo valido',
@@ -34,6 +35,8 @@ export class RecoverComponent implements OnInit {
       }
     }
   }
+  
+  // Verificar que el correo exista en la base de datos
   verificaCorreo(email){
     let usuario = SIMULA.usuario;
     let fcorreo = false;

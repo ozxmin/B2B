@@ -1,6 +1,10 @@
 import { Component, OnInit } from '@angular/core';
+
+// Importando modelo Usuario
 import { User } from '../models/user';
 import { SIMULA } from '../services/simula';
+
+// Importando Servicios Usuario
 import { UserService } from '../services/user.service';
 
 @Component({
@@ -10,9 +14,11 @@ import { UserService } from '../services/user.service';
   providers: [UserService]
 })
 export class HomeComponent implements OnInit {
-  image = "./assets/image/countryUser.png"
-  public tiposUsuario;
+  public image = "./assets/image/countryUser.png"
+  // Iniciando objeto de modelo de usuario
   public newUser : User;
+  // Variables provicionales para data-binding
+  public tiposUsuario;
   public id_user : string;
   public name : string;
   public email : string;
@@ -30,6 +36,8 @@ export class HomeComponent implements OnInit {
     mensajeForm : null ,
     tipoForm : null
   };
+  
+  // Inicialisacion de User Service
   constructor(private _userService: UserService) {
     this.fcorreo = true;
     this.fpws = false;
@@ -38,7 +46,7 @@ export class HomeComponent implements OnInit {
   }
   ngOnInit() {}
 
-
+  // Crear usuario mediante servicio
   createUser(){
     if(this.fcorreo && this.fpws){
       this.newUser.name = this.name;
@@ -46,6 +54,7 @@ export class HomeComponent implements OnInit {
       this.newUser.password = this.password;
       this.newUser.phone = this.phone;
       this.newUser.type = this.type;
+      // Mandando datos al servicio para registrar usuario
       this._userService.crearUsuario(this.newUser).subscribe(
         data => console.log(JSON.stringify(data)),
         error => alert(error),
@@ -101,6 +110,7 @@ export class HomeComponent implements OnInit {
       this.alertMensaje.tipoMail ='alert-danger';
     }
   }
+  // Validar correo
   isValidEmail(mail) {
     return /^\w+([\.\+\-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,4})+$/.test(mail);
   }
