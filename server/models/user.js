@@ -1,11 +1,17 @@
+//Vendor
 const mongoose = require('mongoose');
 const validator = require('validator');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 //Locals
+const env = require('../../config');
 const Product = require('./product.js');
 const Schema = mongoose.Schema;
+//enviroment
+const access = process.env.ACCESS;
+const secretValue = process.env.SECRET_VALUE;
+
 
 // object to configure schema
 const UserSchema = new Schema ({
@@ -73,6 +79,7 @@ const UserSchema = new Schema ({
     }]
 });
 
+
 //=========================Instance Methods=========================
 
 //Encuentra el producto de un usuario por su ID
@@ -100,13 +107,16 @@ UserSchema.methods.getProduct = function(id) {
 //Genera un Token de autenticacion
 UserSchema.methods.generateAuthToken = function() {
     //`this` stores the individual document
+
     var user = this;
     // random value for access
-    var access = 'auth';
-    var token = jwt.sign({_id: user._id.toHexString(), access}, 'secretValue').toString();
+    var token = jwt.sign({_id: user._id.toHexString(), access}, secretValue).toString();
 
     user.tokens.push({access, token});
     // so we can chain another then on server.js
+    console.log(access);
+    console.log(secretValue);
+    console.log(token);
     return user.save().then(() => {
         return token;
     });
@@ -131,7 +141,7 @@ UserSchema.statics.findByToken = function(token) {
     let decoded;
     try {
         //secretValue has to be set as a variable
-        decoded = jwt.verify(token, 'secretValue');
+        decoded = jwt.verify(token, secretValue);
     } catch (error) {
         return Promise.reject('bad token');
     }
@@ -139,7 +149,7 @@ UserSchema.statics.findByToken = function(token) {
         _id: decoded._id,
         //lets us query a nested value
         'tokens.token': token,
-        'tokens.access': 'auth'
+        'tokens.access': access
     });
 };
 
@@ -154,11 +164,8 @@ UserSchema.statics.findByCredentials = function (user, password) {
         //with promises
         return new Promise((resolve, reject) => {
             bcrypt.compare(password, usuario.password, (err, res) => {
-                if (res === true) {
-                    resolve(usuario);
-                } else {
-                    reject('contraseña no valida');
-                }
+                if (res === true) { resolve(usuario);}
+                else { reject('contraseña no valida'); }
             });
         });
     });

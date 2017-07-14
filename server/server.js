@@ -1,4 +1,5 @@
 //"use strict"
+const env = require('../config');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -10,7 +11,8 @@ app.use(bodyParser.json());
 
 require('./routes/routes')(app);//
 
-app.listen(3000,() => {
-    console.log('Listening on port 3000');
+app.listen(process.env.NODE_PORT,() => {
+    console.log(`Node on port ${process.env.NODE_PORT}`);
+    console.log('=========================>>>>');
 });
 //Handles routes
