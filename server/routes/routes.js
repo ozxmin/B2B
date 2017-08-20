@@ -3,10 +3,10 @@ const _ = require('lodash');
 const {ObjectID} = require('mongodb');
 
 //Local imports
-const {mongoose} = require ('../db/mongoose');
-const Product = require('../models/product');
-const {User} = require('../models/user');
-const {authenticate} = require('../middleware/authenticate');
+const {mongoose} = require ('./../db/mongoose');
+const Product = require('./../db/models/product');
+const {User} = require('./../db/models/user');
+const {authenticate} = require('./../routes/middleware/authenticate');
 
 
 module.exports = function(route) {
@@ -16,7 +16,7 @@ module.exports = function(route) {
     const datosPublicosUsuario = ['user','email', 'direccion', 'ubicacion','rfc','empresa',
         'logotipo','celular','descripcion', 'creado' ];
     const datosModificablesPorUsuario = ['user','email','password','ubicacion','rfc','empresa',
-        'logotipo','celular','descripcion', 'direccion']
+        'logotipo','celular','descripcion', 'direccion'];
 
     //crear cuenta, genera token que será usado en las rutas privadas
     route.post('/creaUsuario', (req, res) => {
@@ -180,7 +180,7 @@ module.exports = function(route) {
     route.get('/categoria/:categoria', (req, res) => {
         Product.find({categoria: req.params.categoria}).then((productos) => {
             if (productos.length < 1) {
-                res.status(404).send({message: `no se encontraron productos en '${req.params.subcategoria}'`});
+                res.status(404).send({message: `no se encontraron productos en '${req.params.categoria}'`});
             } else  { res.status(200).send(productos); }
         }).catch(err => {
             res.status(404).send(err);

@@ -1,7 +1,7 @@
 //
 // Modelo Mongoose para los productos
 //
-const env = require('../../config');
+const env = require('./../../config');
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 const diccionarioCategorias = require('./categorias.js');
@@ -9,14 +9,20 @@ const diccionarioCategorias = require('./categorias.js');
 const ProductSchema = new Schema({
     vendedor: {
         type: Schema.Types.ObjectId,
-        ref: 'Users'
+        ref: 'Users',
+        required: true
     },
     nombreProducto: {
         type: String,
         required: true,
         minlength: 3,
         trim: true
+        
     },
+    categoria: String,
+    subcategorias: [{
+        type: String,
+    }],
     descripcion: String,
     ventaMinima: {
         type: Number,
@@ -45,10 +51,11 @@ const ProductSchema = new Schema({
         type: String,
         required: false
     }],
-    estado: Boolean, //Disponible(?)
-    categoria: String,
-    subcategorias: [{
-        type: String,
+    disponible: Boolean, //Disponible(?)
+    oferta: Number,
+    comentariosProducto: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Comentarios'
     }]
 });
 
@@ -73,4 +80,4 @@ ProductSchema.pre('save', function(next, err) {
 
 const Product = mongoose.model('Productos', ProductSchema);
 
-module.exports = Product;
+module.exports.Product = {Product};

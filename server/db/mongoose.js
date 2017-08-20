@@ -1,15 +1,21 @@
-const env = require('../../config');
+const env = require('./../config.js');
 const mongoose = require('mongoose');
 //uses builtin promises ES6
 mongoose.Promise = global.Promise;
 const mongoURI = process.env.MONGODB_URI;
 
-mongoose.connect(mongoURI).then(() => {
+console.log(process.env.NODE_ENV);
+console.log('objectobjectobjectobjectobject');
 
+mongoose.connect(mongoURI).then(() => {
+    
     console.log('Connected through Mongoose...');
     console.log(mongoURI);
     console.log('==================');
 }, (err) => {
+    console.log(process.env.NODE_PORT);
+    console.log(mongoURI);
+    console.log('====================');
     console.log('Not able to connect', err);
 });
 

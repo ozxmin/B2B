@@ -1,5 +1,5 @@
 //"use strict"
-const env = require('../config');
+const env = require('./config');
 const express = require('express');
 const bodyParser = require('body-parser');
 
@@ -16,3 +16,5 @@ app.listen(process.env.NODE_PORT,() => {
     console.log('=========================>>>>');
 });
 //Handles routes
+
+module.exports = {app};

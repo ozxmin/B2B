@@ -5,7 +5,7 @@ const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 //Locals
-const env = require('../../config');
+const env = require('./../../config');
 const Product = require('./product.js');
 const Schema = mongoose.Schema;
 //enviroment
@@ -40,33 +40,17 @@ const UserSchema = new Schema ({
         required: true,
         minlength: 6
     },
-    direccion: String,
-    ubicacion: {
-        type: {
-            lon: Number,
-            lat: Number
-        }
-    },
-    rfc: {
-        type: String,
-        length: 6
-    },
     empresa: String,
-    logotipo: String,
+    
     celular: {
         type: Number,
         // isMobilePhone(str, locale)
     },
-    descripcion: String,
     creado: {
         //unix date
         type: Date,
         default: Date.now
     },
-    productosUsuario: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Productos'
-    }],
     tokens: [{
         access: {
             type: String,
@@ -195,7 +179,7 @@ UserSchema.pre('remove', function(next) {
 })
 
 
-let User = mongoose.model('Users', UserSchema);
+let User = mongoose.model('usermodel', UserSchema);
 module.exports = {User};
 
 
