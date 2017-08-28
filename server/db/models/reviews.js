@@ -27,6 +27,6 @@ const ReviewSchema = new Schema({
     link: String
 });
 
-let Comment = mongoose.model('commentmodel', commentSchema);
+let Comment = mongoose.model('resenas', commentSchema);
 
 module.exports = {Comment}

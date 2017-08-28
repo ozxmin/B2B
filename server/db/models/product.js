@@ -54,7 +54,7 @@ const ProductSchema = new Schema({
     disponible: Boolean, //Disponible(?)
     oferta: Number,
     comentariosProducto: [{
-        type: Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'Comentarios'
     }]
 });
@@ -78,6 +78,6 @@ ProductSchema.pre('save', function(next, err) {
 });
 
 
-const Product = mongoose.model('Productos', ProductSchema);
+const Product = mongoose.model('productos', ProductSchema);
 
 module.exports.Product = {Product};

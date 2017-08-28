@@ -1,5 +1,6 @@
 //Vendor Libraries
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
 
 const CompanySchema = new Schema ({
@@ -8,7 +9,7 @@ const CompanySchema = new Schema ({
         type: Date,
         default: Date.now
     },
-    numbre: {
+    nombreEmpresa: {
         type: String,
         required: true,
         minlength: 3,
@@ -35,12 +36,12 @@ const CompanySchema = new Schema ({
     //monto: virtualType
     intereses: {
         type: [String],
-        validate: {
-          validator: function(v) {
-              return (v.lenght < 10 ).test(v)
-          },
-          message: 'No se pueden agregar más intereses'
-        },
+        // validate: {
+        //   validator: function(v) {
+        //       return (v.lenght > 10 ).test(v)
+        //   },
+        //   message: 'No se pueden agregar más intereses'
+        // },
     },
     giro: String,
     cuentaBancaria: {
@@ -55,9 +56,20 @@ const CompanySchema = new Schema ({
     descripcionEmpresa: String,
     productosEmpresa: [{
         type: Schema.Types.ObjectId,
-        ref: 'Productos'
+        ref: 'productos'
     }],
-    subdominio: String
+    miembros: [{
+        type: Schema.Types.ObjectId,
+        ref: 'usuarios'
+    }]
+    // ,miembros: [{
+    //     rol: ['admin', 'comerciante'],
+    //     miembro: {
+    //         type: Schema.Types.ObjectId,
+    //         ref: 'usuarios'
+    //     }
+    // }]
+
 });
 
 CompanySchema.virtual('montoMembresia').get(function() {
@@ -90,5 +102,5 @@ CompanySchema.virtual('subdominio').get(function() {
     return this.nombre;
 })
 
-let Company = mongoose.model('companymodel', CompanySchema);
+let Company = mongoose.model('companias', CompanySchema);
 module.exports = {Company};

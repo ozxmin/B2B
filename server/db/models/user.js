@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 //Locals
 const env = require('./../../config');
-const Product = require('./product.js');
+// const Product = require('./product');
 const Schema = mongoose.Schema;
 //enviroment
 const access = process.env.ACCESS;
@@ -15,11 +15,16 @@ const secretValue = process.env.SECRET_VALUE;
 
 // object to configure schema
 const UserSchema = new Schema ({
-    user: {
+    nombre: {
         type: String,
         required: true,
         minlength: 3,
-        unique: true,
+        trim: true
+    },
+    apellido: {
+        type: String,
+        required: true,
+        minlength: 3,
         trim: true
     },
     email: {
@@ -40,10 +45,18 @@ const UserSchema = new Schema ({
         required: true,
         minlength: 6
     },
-    empresa: String,
-    
+    rol: {
+        type: String,
+        enum: ['admin', 'compras', 'ventas'],
+        // required: true
+    },
+    nombreEmpresa: String,
+    empresaRef: {
+        type: Schema.Types.ObjectId,
+        ref: 'companias',
+    },
     celular: {
-        type: Number,
+        type: Number,  
         // isMobilePhone(str, locale)
     },
     creado: {
@@ -52,27 +65,45 @@ const UserSchema = new Schema ({
         default: Date.now
     },
     tokens: [{
-        access: {
-            type: String,
-            required: true
-        },
-        token: {
-            type: String,
-            required: true
-        }
+        access:  String,
+        token: String,
     }]
 });
 
 
 //=========================Instance Methods=========================
 
+
+UserSchema.methods.registraEmpresa = function(datosEmpresa) {
+    //Shaky route
+    //Revisar bien lo de las promesas por que dentro del .then no regresa promesas resueltas
+    // revisar el error de unhadled error duplicate key en routes.js
+    let Company = mongoose.model('companias')
+    let admin = this;
+    let nuevaEmpresa = new Company(datosEmpresa);
+    let empresaGuardada
+    nuevaEmpresa.miembros = admin._id;
+
+    nuevaEmpresa.save().then((empresaDB) => {
+        console.log('save');
+        admin.update({$set: {nombreEmpresa: datosEmpresa.nombreEmpresa}}, {new: true}).then((adminUpd) => {     
+            console.log(adminUpd)    
+        })
+        
+        // return empresaDB;
+    }).catch((err) => {
+        console.log('error save Empresa:',err);
+        return Promise.reject(err);
+    });
+    return Promise.resolve(nuevaEmpresa);
+}
+
 //Encuentra el producto de un usuario por su ID
 UserSchema.methods.getProduct = function(id) {
     let usuario = this;
-    // let productId = mongoose.Types.ObjectId(id);
     let productId = Schema.Types.ObjectId(id);
-
     let userProducts = mongoose.model('Productos');
+
     userProducts.find({_id: mongoose.Types.ObjectId(id)}).then((producto) => {
         console.log(producto);
         return producto
@@ -91,16 +122,11 @@ UserSchema.methods.getProduct = function(id) {
 //Genera un Token de autenticacion
 UserSchema.methods.generateAuthToken = function() {
     //`this` stores the individual document
-
     var user = this;
     // random value for access
     var token = jwt.sign({_id: user._id.toHexString(), access}, secretValue).toString();
-
     user.tokens.push({access, token});
     // so we can chain another then on server.js
-    console.log(access);
-    console.log(secretValue);
-    console.log(token);
     return user.save().then(() => {
         return token;
     });
@@ -167,8 +193,7 @@ UserSchema.pre('save', function(next) {
             });
         });
     } else {
-        //not modified
-        next();
+        next(); //not modified
     }
 });
 
@@ -179,7 +204,7 @@ UserSchema.pre('remove', function(next) {
 })
 
 
-let User = mongoose.model('usermodel', UserSchema);
+let User = mongoose.model('usuarios', UserSchema);
 module.exports = {User};
 
 
