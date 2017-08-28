@@ -85,12 +85,9 @@ UserSchema.methods.registraEmpresa = function(datosEmpresa) {
     nuevaEmpresa.miembros = admin._id;
 
     nuevaEmpresa.save().then((empresaDB) => {
-        console.log('save');
         admin.update({$set: {nombreEmpresa: datosEmpresa.nombreEmpresa}}, {new: true}).then((adminUpd) => {     
-            console.log(adminUpd)    
-        })
-        
-        // return empresaDB;
+            // console.log(adminUpd)    
+        });
     }).catch((err) => {
         console.log('error save Empresa:',err);
         return Promise.reject(err);

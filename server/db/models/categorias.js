@@ -44,4 +44,4 @@ const diccionarioCategorias = {
     ]
 };
 
-module.exports = diccionarioCategorias;
+module.exports = {diccionarioCategorias};

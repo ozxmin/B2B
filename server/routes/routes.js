@@ -10,7 +10,7 @@ const {Company} = require('./../db/models/company');
 const {authenticate} = require('./../routes/middleware/authenticate');
 
 
-//============================= Rutas exportadas a express  ==================================
+//============================= Rutas exportadas a express (server.js)  ==================================
 module.exports = function(route) {
 
 //============================= Rutas empresa  ==================================
@@ -46,7 +46,7 @@ route.post('/registroEmpresa', authenticate, (req, res) => {
     const datosEmpresa = _.pick(req.body, camposRegistroEmpresa);
     const admin = req.user;
     admin.registraEmpresa(datosEmpresa).then((empresaGuardada) => {
-        console.log('empresa guardada /registroEmpresa',empresaGuardada);
+        // console.log('empresa guardada /registroEmpresa',empresaGuardada);
         res.status(201).send(empresaGuardada)
         if(!empresaGuardada) {
             res.status(404).send('empresa no guardada', empresaGuardada);
@@ -56,6 +56,19 @@ route.post('/registroEmpresa', authenticate, (req, res) => {
       res.status(400).send(err);  
     })
 });
+
+
+
+//=========================Rutas Publicas sistema =========================
+
+route.get('/getDiccionarioCategorias', (_, res) => {
+    const {diccionarioCategorias} = require('./../db/models/categorias');
+    res.status(200).send(diccionarioCategorias);
+});
+
+
+
+
 
 route.patch('/agregaProducto', authenticate, (req, res) => {
     const datosProducto = _.pick(req.body, editablesDeProducto);

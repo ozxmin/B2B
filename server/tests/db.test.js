@@ -31,15 +31,35 @@ before((done) => {
     User.remove({}).then(() =>{
         Company.remove({}).then(() => done());
     });    
-    
 });
 
 //------------------> Inicio de pruebas
 describe('Generacion de datos', () => {
 
+
+    it('/getDiccionario', (done) => {
+        const {diccionarioCategorias} = require('./../db/models/categorias');
+        request(app).get('/getDiccionarioCategorias')
+            .send()
+            .expect(200)
+            .expect((res) => {
+                // console.log(res.body);
+                expect(res.body['Hilaturas'])
+                .toEqual(diccionarioCategorias['Hilaturas'])
+            })
+        .end((err, res) => {
+            if (err) {
+                console.log('err Diccionario: ',err);
+                return done(err);
+            }
+            // console.log(res);
+            return done();
+        });
+    });
+
     it('/registroadmin: guarda admin en DB', (done) => {
-        request(app)
-        .post('/registroadmin')
+        
+        request(app).post('/registroadmin')
             .send(adminGoodProbe)
             .expect((res) => {
                 expect(res.body.nombre).toBe(adminGoodProbe.nombre);
@@ -63,22 +83,21 @@ describe('Generacion de datos', () => {
         });
     });
 
-
-
+    //Depende de registro admin
     it('Registra empresa: /registroEmpresa', (done) => {
         request(app)
             .post('/registroEmpresa')
             .set('x-auth', resTokenUsuario)
             .send(datosMinEmpresa)
             .expect((res) => {
-                console.log(res.header);
+                // console.log(res.header);
                 expect(res.body.empresa).toBe(datosMinEmpresa.empresa);
                 restokenAdmin = res.header['x-auth'];
             })
             .expect(201)
        .end((err, res) => {
            if(err) {
-               console.log(err);
+            //    console.log(err);
                return done(err);
            }
            Company.find({}).then((empresas)=> {
@@ -175,14 +194,14 @@ describe('Busqueda de datos', () => {
 
 });
 
-describe('Modificacion de datos', () => {
-    it('cambio de rol', () => {
+// describe('Modificacion de datos', () => {
+//     it('cambio de rol', () => {
         
-    });
-});
+//     });
+// });
 
-describe('Destruccion de datos', () => {
-    it('logout', () => {
+// describe('Destruccion de datos', () => {
+//     it('logout', () => {
         
-    });
-});
+//     });
+// });
