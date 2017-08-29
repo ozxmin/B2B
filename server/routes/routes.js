@@ -7,6 +7,7 @@ const {mongoose} = require ('./../db/mongoose');
 const {Product} = require('./../db/models/product');
 const {User} = require('./../db/models/user');
 const {Company} = require('./../db/models/company');
+const {ConnectedAd} = require('./../db/models/publicidadConnected');
 const {authenticate} = require('./../routes/middleware/authenticate');
 
 
@@ -67,7 +68,24 @@ route.get('/getDiccionarioCategorias', (_, res) => {
 });
 
 
+route.get('/getAdsConnected/:number',(req, res) => {
 
+    ConnectedAd.findByAdNumber(req.params.number).then((connectedAd) => {
+        res.status(200).send(connectedAd);
+    }).catch((err) => {
+        res.status(404).send(err);
+    });
+});
+
+
+route.get('/producto/:id', (req, res) => {
+    const productId = isThisValidId(req.params.id, res);
+    Product.find({_id: productId}).then((producto) => {
+        if (producto.length < 1) {
+            res.status(404).send({message: "producto no encontrado"});
+        } else  { res.status(200).send(producto); }
+    }).catch(err => { res.status(404).send(err); });
+});
 
 
 route.patch('/agregaProducto', authenticate, (req, res) => {
