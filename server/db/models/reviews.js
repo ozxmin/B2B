@@ -3,18 +3,18 @@ const mongoose = require('mongoose');
 const ReviewSchema = new Schema({
     titulo: {
         type: String,
-        minlenght: 3
+        minlenght: 3,
         required: true
     },
     comentario: {
         type: String,
-        minlenght: 3
+        minlenght: 3,
         required: true
     },
     usuario: {
         type: String,
         required: true
-    }
+    },
     fechaPublicacion: {
         type: Date,
         default: Date.now
@@ -27,6 +27,6 @@ const ReviewSchema = new Schema({
     link: String
 });
 
-let Comment = mongoose.model('resenas', commentSchema);
+let Review = mongoose.model('resenas', commentSchema);
 
-module.exports = {Comment}
+module.exports = {Review}
