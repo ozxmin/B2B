@@ -8,15 +8,17 @@ const {app} = require('./../server');
 const {User} = require('./../db/models/user');
 const {Company} = require('./../db/models/company');
 const {ConnectedAd} = require('./../db/models/publicidadConnected');
+
 const {
     populateDB, 
     adsConnected, 
     datosMinEmpresa, 
     adminGoodProbe,
-    random
+    random,
+    productosDeEmpresa
 } = require('./seed/seed')
 
-var resTokenUsuario;
+var tokenUsuario;
 
 
 //================> Set up
@@ -69,6 +71,8 @@ describe('Home Publico', () => {
     });
 
     xit('/getDetallesProductos', () => {
+
+        // const idProduct
         
     });
 
@@ -83,7 +87,7 @@ describe('Registro admin y empresa', () => {
             .send(adminGoodProbe)
             .expect((res) => {
                 expect(res.body.nombre).toBe(adminGoodProbe.nombre);
-                resTokenUsuario = res.header['x-auth'];
+                tokenUsuario = res.header['x-auth'];
             })
             .expect(201)
         .end((err, res) => {
@@ -106,11 +110,11 @@ describe('Registro admin y empresa', () => {
     it('/registroEmpresa Registra empresa', (done) => {
         request(app)
             .post('/registroEmpresa')
-            .set('x-auth', resTokenUsuario)
+            .set('x-auth', tokenUsuario)
             .send(datosMinEmpresa)
             .expect((res) => {
                 expect(res.body.empresa).toBe(datosMinEmpresa.empresa);
-                restokenAdmin = res.header['x-auth'];
+                // restokenAdmin = res.header['x-auth'];
             })
             .expect(201)
        .end((err, res) => {
@@ -124,6 +128,28 @@ describe('Registro admin y empresa', () => {
        });
 
     });
+
+    it('Agrega producto', (done) => {
+        const producto = productosDeEmpresa[random(productosDeEmpresa.length)];
+        request(app)
+            .post('/agregaProducto')
+            .set('x-auth', tokenUsuario)
+            .send(producto)
+            .expect(201)
+            .end((err, res) => {
+                if(err) {
+                    console.log(err);
+                }
+                else {
+                    console.log(res);
+                }
+                done()
+            })
+
+            
+        done();
+    });
+
     xit('/completaEmpresa Comprleta registro empresa', () => {
         
     });
@@ -138,17 +164,18 @@ describe('Login', () => {
     });
 });
 
-describe('Productos Por Categoria', () => {
-    xit('/getDetallesProducto: detalles por id', () => {
-        
-    });
+
+///================Productos
+
+
+
 
     xit('/getReviewsProductos: reviews por id', () => {
         
     });
 
 
-});
+// });
 
 
 

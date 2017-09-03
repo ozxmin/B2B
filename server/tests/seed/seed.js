@@ -5,6 +5,9 @@ const {ConnectedAd} = require('./../../db/models/publicidadConnected');
 
 const random = (upTo) =>  Math.floor((Math.random() * upTo) + 1);
 
+
+
+///==========Users================
 const adminGoodProbe = {
     nombre: `usuario${random(100)}`,
     apellido: 'apellido',
@@ -20,6 +23,32 @@ const datosMinEmpresa = {
     suscripcion: 'gratis'
 };
 
+
+///========Products=============
+const productosDeEmpresa = [
+    {
+        nombreProducto: 'Producto1',
+        categoria: 'Hilaturas',
+        subcategoria: 'Hilo de acrílico',
+        descripcion: 'descripcion 1',
+        precio: 20,
+        inventario: 10,
+    },
+    {
+        nombreProducto: 'Producto2',
+        categoria: 'Tela',
+        subcategoria: 'Tela acrílica',
+        descripcion: 'descripcion 2',
+        precio: 10,
+        inventario: 20
+    }
+]
+
+
+
+
+
+//==============Ads
 const adsConnected =  [
     {
         titulo: 'mi anuncio 1',
@@ -59,4 +88,6 @@ const populateDB = (done) => {
 
 
 
-module.exports = {populateDB, adsConnected, datosMinEmpresa, adminGoodProbe, random}
+module.exports = {
+    populateDB, adsConnected, datosMinEmpresa, adminGoodProbe, random, productosDeEmpresa
+}

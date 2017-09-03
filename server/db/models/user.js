@@ -1,12 +1,14 @@
 //Vendor
 const mongoose = require('mongoose');
+const mongo = require('mongodb');
 const validator = require('validator');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 //Locals
 const env = require('./../../config');
-// const Product = require('./product');
+const {Company} = require('./company');
+const {Product} = require('./product');
 const Schema = mongoose.Schema;
 //enviroment
 const access = process.env.ACCESS;
@@ -73,48 +75,106 @@ const UserSchema = new Schema ({
 
 //=========================Instance Methods=========================
 
-
 UserSchema.methods.registraEmpresa = function(datosEmpresa) {
     //Shaky route
     //Revisar bien lo de las promesas por que dentro del .then no regresa promesas resueltas
     // revisar el error de unhadled error duplicate key en routes.js
-    let Company = mongoose.model('companias')
     let admin = this;
     let nuevaEmpresa = new Company(datosEmpresa);
     let empresaGuardada
     nuevaEmpresa.miembros = admin._id;
 
     nuevaEmpresa.save().then((empresaDB) => {
-        admin.update({$set: {nombreEmpresa: datosEmpresa.nombreEmpresa}}, {new: true}).then((adminUpd) => {     
-            // console.log(adminUpd)    
+        admin.update({$set: {
+            nombreEmpresa: datosEmpresa.nombreEmpresa,
+            empresaRef: empresaDB._id
+        }}, {new: true}).then((adminUpd) => {     
+            // console.log(adminUpd);    
         });
     }).catch((err) => {
         console.log('error save Empresa:',err);
         return Promise.reject(err);
     });
     return Promise.resolve(nuevaEmpresa);
-}
+};
+
+
+//Agrega un producto a los productos de la empresa y los guarda en db
+// --no le caería mal una refacorización para reducir el numero de returns
+UserSchema.methods.agregaProducto = function (datosProducto) {
+    let usuario = this;
+//encuentra compañia de usuario
+    return usuario.getCompany(usuario.empresaRef).then((compania) => {
+        let producto = new Product(datosProducto);
+        producto.vendedor = compania;
+
+        return producto.save().then((productoGuardado) => {
+            compania.productosEmpresa.push(productoGuardado);
+            return compania.save().then((companiaGuardada) => {
+                return Promise.resolve(productoGuardado);
+            });
+        }).catch((err) => {
+            console.log('error===========');
+            console.log(err);
+            return Promise.reject('err');
+        });
+
+        // return Promise.resolve(productoGuardado);
+
+    });
+};
+
+
+UserSchema.methods.getCompany = function (id) {
+    const user = this;
+    const companyId = mongoose.Types.ObjectId(String(id))
+    // const Companies = mongoose.model('companias');
+    return Company.findOne({_id: companyId}).then((companyFound) => {
+        if(!companyFound) {
+            return Promise.reject('compania no encontrada');
+        }
+        console.log('resolved!!!!');
+        console.log(companyFound);
+        return Promise.resolve(companyFound);
+    }).catch((err) => {
+        console.log(err);
+        return Promise.reject(err);
+    });
+
+    // Company.findOne({}).then((companyFound) => {
+    //     if(!companyFound) {
+    //         return Promise.reject('compania no encontrada');
+    //     }
+    //     console.log(companyFound);
+    //     console.log('companyFound============');
+    //     return Promise.resolve(companyFound);
+    // }).catch((err) => {
+    //     console.log(err);
+    //     return Promise.reject(err);
+    // });
+};
+
 
 //Encuentra el producto de un usuario por su ID
-UserSchema.methods.getProduct = function(id) {
-    let usuario = this;
-    let productId = Schema.Types.ObjectId(id);
-    let userProducts = mongoose.model('Productos');
+// UserSchema.methods.getProduct = function(id) {
+//     let usuario = this;
+//     let productId = Schema.Types.ObjectID(id);
+//     let userProducts = mongoose.model('Productos');
 
-    userProducts.find({_id: mongoose.Types.ObjectId(id)}).then((producto) => {
-        console.log(producto);
-        return producto
-    }).catch(err => {
-        return err;
-    })
+//     userProducts.find({_id: mongoose.Types.ObjectId(id)}).then((producto) => {
+//         console.log(producto);
+//         return producto
+//     }).catch(err => {
+//         return err;
+//     });
 
-    let productoEncontrado;
-    productoEncontrado = usuario.products.id(productId);
-    if (!productoEncontrado) {
-        return Promise.reject('producto no encontrado');
-    }
-    return Promise.resolve(productoEncontrado);
-}
+//     let productoEncontrado;
+//     productoEncontrado = usuario.products.id(productId);
+//     if (!productoEncontrado) {
+//         return Promise.reject('producto no encontrado');
+//     }
+//     return Promise.resolve(productoEncontrado);
+// };
 
 //Genera un Token de autenticacion
 UserSchema.methods.generateAuthToken = function() {
@@ -198,7 +258,7 @@ UserSchema.pre('remove', function(next) {
     let user = this;
     let userProducts = mongoose.model('Productos');
     userProducts.remove({_id: {$in: user.productosUsuario}}).then(() => next());
-})
+});
 
 
 let User = mongoose.model('usuarios', UserSchema);

@@ -213,18 +213,28 @@ route.get('/misProductos', authenticate, (req, res) => {
 });
 
 //Crea un producto nuevo y lo agrega a su usuario
-route.patch('/agregaProducto', authenticate, (req, res) => {
+route.post('/agregaProducto', authenticate, (req, res) => {
     const datosProducto = _.pick(req.body, editablesDeProducto);
     const usuario = req.user;
-    const producto = new Product(datosProducto);
-    usuario.productosUsuario.push(producto);
-    producto.vendedor = usuario;
 
-    Promise.all([usuario.save(), producto.save()]).then((usuario) => {
-        res.status(201).send({message: "producto agregado"});
-    }).catch(err => {
+    usuario.agregaProducto(datosProducto).then((productoAgregado) => {
+        console.log(productoAgregado);
+        res.status(201).send(productoAgregado);
+    }).catch((err) => {
+        console.log(err);
         res.status(400).send(err);
     });
+
+    // const producto = new Product(datosProducto);
+    //usuario.agregaproducto
+    // usuario.productosUsuario.push(producto);
+    // producto.vendedor = usuario;
+    // Promise.all([usuario.save(), producto.save()]).then((usuario) => {
+    //     res.status(201).send({message: "producto agregado"});
+    // }).catch(err => {
+    //     res.status(400).send(err);
+    // });
+
 });
 
 //borra producto
