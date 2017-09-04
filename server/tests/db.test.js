@@ -19,7 +19,7 @@ const {
     productosDeEmpresa
 } = require('./seed/seed')
 
-let tokenUsuario, idProductoAgregado;
+let tokenUsuario, idProductoAgregado, nombreUsuario;
 
 
 //================> Set up
@@ -38,20 +38,21 @@ describe('Registro admin y empresa', () => {
                 tokenUsuario = res.header['x-auth'];
             })
             .expect(201)
-        .end((err, res) => {
-            if (err) {
-                console.log(err);
-                return done(err);
-            }
-            User.find({email: adminGoodProbe.email}).then((usuarios) => {
-                expect(usuarios.length).toBe(1);
-                expect(usuarios[0].email).toBe(adminGoodProbe.email);
-                done();
-            }).catch((e) => {
-                console.log(e);
-                done(e)
+            .end((err, res) => {
+                if (err) {
+                    console.log(err);
+                    return done(err);
+                }
+                User.find({email: adminGoodProbe.email}).then((usuarios) => {
+                    expect(usuarios.length).toBe(1);
+                    expect(usuarios[0].email).toBe(adminGoodProbe.email);
+                    nombreUsuario = usuarios[0].nombre
+                    done();
+                }).catch((e) => {
+                    console.log(e);
+                    done(e)
+                });
             });
-        });
     });
 
     //Depende de registro admin
@@ -64,16 +65,15 @@ describe('Registro admin y empresa', () => {
                 expect(res.body.empresa).toBe(datosMinEmpresa.empresa);
             })
             .expect(201)
-       .end((err, res) => {
-           if(err) {
-               console.log(err);
-               return done(err);
-           }
-           Company.find({}).then((empresas)=> {
-                done();
-           }).catch((e) => done(e));
-       });
-
+            .end((err, res) => {
+                if(err) {
+                    console.log(err);
+                    done(err);
+                }
+                Company.find({}).then((empresas)=> {
+                    done();
+                }).catch((e) => done(e));
+            });
     });
 
     it('Agrega producto', (done) => {
@@ -88,22 +88,35 @@ describe('Registro admin y empresa', () => {
                 idProductoAgregado = res.body._id
                 if(err) {
                     console.log(err);
+                    done(err);
                 }
+            });
+        done();
+    });
+
+    it('logout', (done) => {
+        request(app)
+            .delete('/logout')
+            .set('x-auth', tokenUsuario)
+            .send()
+            .expect(205)
+            .end((err, res) => {
+                User.find({nombre: nombreUsuario}).then((loggedOutUser) => {
+                    expect(loggedOutUser[0].tokens.length).toBeFewerThan(1);
+                }).catch((err) => {
+                    console.log(err);
+                    done(err);
+                })
             })
-            done();
+        done();
+    });
+
+    xit('login', (done) => {
+        
+        done();
     });
 
     xit('/completaEmpresa Comprleta registro empresa', (done) => {
-        done();
-    });
-
-    xit('logout', (done) => {
-        
-        done();
-    });
-
-    xit('logout', (done) => {
-        
         done();
     });
 
@@ -123,12 +136,12 @@ describe('Home Publico', () => {
                     .expect((res) => {
                         expect(res.body.titulo).toBe(adsConnected[adNumber-1].titulo);
                     })
-                .end((err, res) => {
-                    if (err) {
-                        console.log(err);
-                        return done(err);
-                    }
-                });
+                    .end((err, res) => {
+                        if (err) {
+                            console.log(err);
+                            return done(err);
+                        }
+                    });
                 done();
             });
 
