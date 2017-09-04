@@ -19,7 +19,7 @@ const {
     productosDeEmpresa
 } = require('./seed/seed')
 
-let tokenUsuario, idProductoAgregado, nombreUsuario;
+let tokenUsuario, idProductoAgregado, nombreUsuario, emailUsuario;
 
 
 //================> Set up
@@ -47,6 +47,7 @@ describe('Registro admin y empresa', () => {
                     expect(usuarios.length).toBe(1);
                     expect(usuarios[0].email).toBe(adminGoodProbe.email);
                     nombreUsuario = usuarios[0].nombre
+                    emailUsuario = usuarios[0].email
                     done();
                 }).catch((e) => {
                     console.log(e);
@@ -79,8 +80,7 @@ describe('Registro admin y empresa', () => {
     it('Agrega producto', (done) => {
         const myRandom = random(productosDeEmpresa.length)
         const producto = productosDeEmpresa[myRandom-1];
-        request(app)
-            .post('/agregaProducto')
+        request(app).post('/agregaProducto')
             .set('x-auth', tokenUsuario)
             .send(producto)
             .expect(201)
@@ -95,8 +95,7 @@ describe('Registro admin y empresa', () => {
     });
 
     it('logout', (done) => {
-        request(app)
-            .delete('/logout')
+        request(app).delete('/logout')
             .set('x-auth', tokenUsuario)
             .send()
             .expect(205)
@@ -111,8 +110,21 @@ describe('Registro admin y empresa', () => {
         done();
     });
 
-    xit('login', (done) => {
-        
+    it('login', (done) => {
+        request(app).post('/login')
+            .send({email: emailUsuario, password: 'contrasena'})
+            .expect(200)
+            .end((err, res) => {
+
+                User.find({nombre: nombreUsuario}).then((loggedIn) => {
+                    
+                    expect(loggedIn[0].tokens.length).toBeGreaterThan(0);
+                    expect(loggedIn[0].tokens[0].token).toEqual(res.body.tokens[0].token);
+                }).catch((err) => {
+                    console.log(err);
+                    return done(err);
+                })
+            })
         done();
     });
 
@@ -126,24 +138,23 @@ describe('Registro admin y empresa', () => {
 //===================Home Publico ====================
 describe('Home Publico', () => {
     
-    it('/getAdsConnected: devuelve un ad de connected', (done) => {
-        
-                const adNumber = random(3);
-                request(app)
-                    .get(`/getAdsConnected/${adNumber}`)
-                    .send()
-                    .expect(200)
-                    .expect((res) => {
-                        expect(res.body.titulo).toBe(adsConnected[adNumber-1].titulo);
-                    })
-                    .end((err, res) => {
-                        if (err) {
-                            console.log(err);
-                            return done(err);
-                        }
-                    });
-                done();
+    it('/getAdsConnected: devuelve un ad de connected', (done) => {  
+        const adNumber = random(3);
+        request(app)
+            .get(`/getAdsConnected/${adNumber}`)
+            .send()
+            .expect(200)
+            .expect((res) => {
+                expect(res.body.titulo).toBe(adsConnected[adNumber-1].titulo);
+            })
+            .end((err, res) => {
+                if (err) {
+                    console.log(err);
+                    return done(err);
+                }
             });
+        done();
+    });
 
     it('/getDiccionario: todas las categorias y sub disponibles', (done) => {
         const {diccionarioCategorias} = require('./../db/models/categorias');
@@ -164,7 +175,6 @@ describe('Home Publico', () => {
     });
 
     it('/producto: devuelve los detalles de un producto dado su ID', (done) => {
-        var prueba
         request(app).get(`/producto/${idProductoAgregado}`)
             .send()
             .expect(200)
@@ -172,17 +182,16 @@ describe('Home Publico', () => {
                 let producto = productosDeEmpresa.find((producto) => {
                     return producto.nombreProducto === res.body[0].nombreProducto   
                 });
-                prueba = producto;
                 expect(producto.subcategorias).toNotEqual(null);
                 expect(producto.subcategorias).toEqual(res.body[0].subcategorias);
 
             })
-        .end((err, res) => {
-            if(err) {
-                console.log(err);
-                return done(err);
-            }
-        });
+            .end((err, res) => {
+                if(err) {
+                    console.log(err);
+                    return done(err);
+                }
+            });
         done();
     });
 
