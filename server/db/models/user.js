@@ -117,9 +117,6 @@ UserSchema.methods.agregaProducto = function (datosProducto) {
             console.log(err);
             return Promise.reject('err');
         });
-
-        // return Promise.resolve(productoGuardado);
-
     });
 };
 
@@ -138,41 +135,7 @@ UserSchema.methods.getCompany = function (id) {
         console.log(err);
         return Promise.reject(err);
     });
-
-    // Company.findOne({}).then((companyFound) => {
-    //     if(!companyFound) {
-    //         return Promise.reject('compania no encontrada');
-    //     }
-    //     console.log(companyFound);
-    //     console.log('companyFound============');
-    //     return Promise.resolve(companyFound);
-    // }).catch((err) => {
-    //     console.log(err);
-    //     return Promise.reject(err);
-    // });
 };
-
-
-//Encuentra el producto de un usuario por su ID
-// UserSchema.methods.getProduct = function(id) {
-//     let usuario = this;
-//     let productId = Schema.Types.ObjectID(id);
-//     let userProducts = mongoose.model('Productos');
-
-//     userProducts.find({_id: mongoose.Types.ObjectId(id)}).then((producto) => {
-//         console.log(producto);
-//         return producto
-//     }).catch(err => {
-//         return err;
-//     });
-
-//     let productoEncontrado;
-//     productoEncontrado = usuario.products.id(productId);
-//     if (!productoEncontrado) {
-//         return Promise.reject('producto no encontrado');
-//     }
-//     return Promise.resolve(productoEncontrado);
-// };
 
 //Genera un Token de autenticacion
 UserSchema.methods.generateAuthToken = function() {
@@ -261,13 +224,3 @@ UserSchema.pre('remove', function(next) {
 
 let User = mongoose.model('usuarios', UserSchema);
 module.exports = {User};
-
-
-
-//Overrides what gets sent back to the client in the json
-// UserSchema.methods.toJSON = function() {
-//     let user = this;
-//     //converts mongoose object to regular object
-//     let userObject = user.toObject();
-//     return _.pick(userObject, ['_id','email']);
-// }

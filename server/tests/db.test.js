@@ -9,6 +9,7 @@ const {User} = require('./../db/models/user');
 const {Company} = require('./../db/models/company');
 const {ConnectedAd} = require('./../db/models/publicidadConnected');
 
+// Test Global variables
 const {
     populateDB, 
     adsConnected, 
@@ -24,8 +25,7 @@ let tokenUsuario, idProductoAgregado;
 //================> Set up
 before(populateDB);
 
-//==============> Inicio de pruebas
-
+//>>>>>>>>>>>>>>>>==============> Inicio de pruebas
 
 //=================Registro
 describe('Registro admin y empresa', () => {
@@ -62,7 +62,6 @@ describe('Registro admin y empresa', () => {
             .send(datosMinEmpresa)
             .expect((res) => {
                 expect(res.body.empresa).toBe(datosMinEmpresa.empresa);
-                // restokenAdmin = res.header['x-auth'];
             })
             .expect(201)
        .end((err, res) => {
@@ -90,22 +89,24 @@ describe('Registro admin y empresa', () => {
                 if(err) {
                     console.log(err);
                 }
-                done();
             })
+            done();
     });
 
-    xit('/completaEmpresa Comprleta registro empresa', () => {
+    xit('/completaEmpresa Comprleta registro empresa', (done) => {
+        done();
+    });
+
+    xit('logout', (done) => {
         
+        done();
     });
 
-});
-
-
-
-describe('Login', () => {
-    xit('login', () => {
+    xit('logout', (done) => {
         
+        done();
     });
+
 });
 
 
@@ -120,7 +121,6 @@ describe('Home Publico', () => {
                     .send()
                     .expect(200)
                     .expect((res) => {
-                        // expect(3).toBe(2);
                         expect(res.body.titulo).toBe(adsConnected[adNumber-1].titulo);
                     })
                 .end((err, res) => {
@@ -128,8 +128,8 @@ describe('Home Publico', () => {
                         console.log(err);
                         return done(err);
                     }
-                    return done();
                 });
+                done();
             });
 
     it('/getDiccionario: todas las categorias y sub disponibles', (done) => {
@@ -146,14 +146,8 @@ describe('Home Publico', () => {
                 console.log('err Diccionario: ',err);
                 return done(err);
             }
-            return done();
         });
-    });
-
-    xit('/getProductosDestacadosHome', () => {   
-    });
-
-    xit('/getProductosDestacadosXCategoria', () => {
+        done();
     });
 
     it('/producto: devuelve los detalles de un producto dado su ID', (done) => {
@@ -162,132 +156,40 @@ describe('Home Publico', () => {
             .send()
             .expect(200)
             .expect((res) => {
-                console.log('res.body', res.body);
-
-                let producto = productosDeEmpresa.find(producto => producto.nombreProducto === res.body[0].nombreProducto)
-
+                let producto = productosDeEmpresa.find((producto) => {
+                    return producto.nombreProducto === res.body[0].nombreProducto   
+                });
                 prueba = producto;
-                // console.log(prueba);
-                expect(producto.subcategoria).toEqual(res.body[0].subcategoria)
+                expect(producto.subcategorias).toNotEqual(null);
+                expect(producto.subcategorias).toEqual(res.body[0].subcategorias);
 
             })
-            .end((err, res) => {
-                if(err) {
-                    // console.log(err);
-                    return done(err);
-                }
-                return done();
-                
-            });
+        .end((err, res) => {
+            if(err) {
+                console.log(err);
+                return done(err);
+            }
+        });
+        done();
     });
 
-});
+    xit('/getProductosDestacadosHome', (done) => {
+        done();
+    });
 
+    xit('/getProductosDestacadosXCategoria', (done) => {
+        done();
+    });
+
+
+});
 
 
 ///================Productos
 
-
 describe('Productos', () => {
-    xit('/getReviewsProductos: reviews por id', () => {
-        
+    xit('/getReviewsProductos: reviews por id', (done) => {
+        done();
     });
     
 });
-
-
-
-// });
-
-
-
-// describe('Modificacion de datos', () => {
-//     it('cambio de rol', () => {
-        
-//     });
-// });
-
-// describe('Destruccion de datos', () => {
-//     it('logout', () => {
-        
-//     });
-// });
-
-
-
-// describe('Busqueda de datos', () => {
-    // it('login', () => {
-    //         //find by token
-    //         User.findByToken(resTokenUsuario).then((usuario) => {
-    //             expect(usuario.user).toBe(usuarioGoodMinProbe.user);                
-    //             done();
-    //         }).catch((e) => done(e)); 
-    // });
-    // it('diccionario de categorias', () => {
-        
-    // });
-
-// });
-
-
-
-    //     request(app)
-    //         .post('/login')
-    //         .send({
-    //           email: adminGoodProbe.email,
-    //           password: adminGoodProbe.password
-    //         })
-    //         .expect(200)
-    //         .expect((res) => {
-    //             epxect(res.header['x-auth']).toExist();
-    //             // expect(res.body.empresa).toBe(datosMinEmpresa.empresa);
-                
-    //         })
-    //         .end((err, res) => {
-    //             if (err) {
-    //                 return done(err);
-    //             }
-    //             // User.findOne({email: adminGoodProbe.email}).then((user) => {
-    //             //     expect(user.tokens[0]).toInclude({
-    //             //         access: 'auth',
-    //             //         token: res.headers['x-auth']
-    //             //     })
-    //             //     done();
-    //             // });
-    //             done()
-    //         }).catch((err) => {
-    //             done(err)
-    //         })
-    // });
-
-    // it('/creaUsuario: guarda usuario en DB', (done) => {
-    //     const usuarioGoodMinProbe = {
-    //         nombre: `usuario`,
-    //         email: `ejemplo${Math.floor((Math.random() * 100) + 1)}@correo.com`,
-    //         password: 'contrasena',
-    //         rol: 'admin',
-    //         empresa: 'empresita',
-    //         celular: 1234567890
-    //     };
-    //     var tokenUsuario;
-        
-    //     request(app)
-    //         .post('/creausuario')
-    //         .send(usuarioGoodMinProbe)
-    //         .expect(201)
-    //         .expect((res) => {
-    //             expect(res.body.user).toBe(usuarioGoodMinProbe.user);
-    //             resTokenUsuario = res.header['x-auth'];
-    //         })
-    //     .end((err, res) => {
-    //         if (err) {
-    //             return done(err);
-    //         }
-    //         // //find saved user by name
-    //         User.find({user: usuarioGoodMinProbe.user}).then((usuarios) => {
-    //             expect(usuarios.length).toBe(1);
-    //             expect(usuarios[0].email).toBe(usuarioGoodMinProbe.email);
-    //             done();
-    //         }).catch((e) => done(e));
-    //     });
-    // });
