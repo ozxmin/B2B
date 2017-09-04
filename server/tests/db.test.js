@@ -18,65 +18,13 @@ const {
     productosDeEmpresa
 } = require('./seed/seed')
 
-var tokenUsuario;
+let tokenUsuario, idProductoAgregado;
 
 
 //================> Set up
 before(populateDB);
 
 //==============> Inicio de pruebas
-describe('Home Publico', () => {
-    
-    it('/getAdsConnected: devuelve un ad de connected', (done) => {
-        
-                const adNumber = random(3);
-                request(app)
-                    .get(`/getAdsConnected/${adNumber}`)
-                    .send()
-                    .expect(200)
-                    .expect((res) => {
-                        expect(res.body.titulo).toBe(adsConnected[adNumber-1].titulo);
-                    })
-                .end((err, res) => {
-                    if (err) {
-                        console.log(err);
-                        return done(err);
-                    }
-                    return done();
-                });
-            });
-
-    it('/getDiccionario: todas las categorias y sub disponibles', (done) => {
-        const {diccionarioCategorias} = require('./../db/models/categorias');
-        request(app).get('/getDiccionarioCategorias')
-            .send()
-            .expect(200)
-            .expect((res) => {
-                expect(res.body['Hilaturas'])
-                .toEqual(diccionarioCategorias['Hilaturas'])
-            })
-        .end((err, res) => {
-            if (err) {
-                console.log('err Diccionario: ',err);
-                return done(err);
-            }
-            return done();
-        });
-    });
-
-    xit('/getProductosDestacadosHome', () => {   
-    });
-
-    xit('/getProductosDestacadosXCategoria', () => {
-    });
-
-    xit('/getDetallesProductos', () => {
-
-        // const idProduct
-        
-    });
-
-});
 
 
 //=================Registro
@@ -130,24 +78,20 @@ describe('Registro admin y empresa', () => {
     });
 
     it('Agrega producto', (done) => {
-        const producto = productosDeEmpresa[random(productosDeEmpresa.length)];
+        const myRandom = random(productosDeEmpresa.length)
+        const producto = productosDeEmpresa[myRandom-1];
         request(app)
             .post('/agregaProducto')
             .set('x-auth', tokenUsuario)
             .send(producto)
             .expect(201)
             .end((err, res) => {
+                idProductoAgregado = res.body._id
                 if(err) {
                     console.log(err);
                 }
-                else {
-                    console.log(res);
-                }
-                done()
+                done();
             })
-
-            
-        done();
     });
 
     xit('/completaEmpresa Comprleta registro empresa', () => {
@@ -165,14 +109,92 @@ describe('Login', () => {
 });
 
 
+//===================Home Publico ====================
+describe('Home Publico', () => {
+    
+    it('/getAdsConnected: devuelve un ad de connected', (done) => {
+        
+                const adNumber = random(3);
+                request(app)
+                    .get(`/getAdsConnected/${adNumber}`)
+                    .send()
+                    .expect(200)
+                    .expect((res) => {
+                        // expect(3).toBe(2);
+                        expect(res.body.titulo).toBe(adsConnected[adNumber-1].titulo);
+                    })
+                .end((err, res) => {
+                    if (err) {
+                        console.log(err);
+                        return done(err);
+                    }
+                    return done();
+                });
+            });
+
+    it('/getDiccionario: todas las categorias y sub disponibles', (done) => {
+        const {diccionarioCategorias} = require('./../db/models/categorias');
+        request(app).get('/getDiccionarioCategorias')
+            .send()
+            .expect(200)
+            .expect((res) => {
+                expect(res.body['Hilaturas'])
+                .toEqual(diccionarioCategorias['Hilaturas'])
+            })
+        .end((err, res) => {
+            if (err) {
+                console.log('err Diccionario: ',err);
+                return done(err);
+            }
+            return done();
+        });
+    });
+
+    xit('/getProductosDestacadosHome', () => {   
+    });
+
+    xit('/getProductosDestacadosXCategoria', () => {
+    });
+
+    it('/producto: devuelve los detalles de un producto dado su ID', (done) => {
+        var prueba
+        request(app).get(`/producto/${idProductoAgregado}`)
+            .send()
+            .expect(200)
+            .expect((res) => {
+                console.log('res.body', res.body);
+
+                let producto = productosDeEmpresa.find(producto => producto.nombreProducto === res.body[0].nombreProducto)
+
+                prueba = producto;
+                // console.log(prueba);
+                expect(producto.subcategoria).toEqual(res.body[0].subcategoria)
+
+            })
+            .end((err, res) => {
+                if(err) {
+                    // console.log(err);
+                    return done(err);
+                }
+                return done();
+                
+            });
+    });
+
+});
+
+
+
 ///================Productos
 
 
-
-
+describe('Productos', () => {
     xit('/getReviewsProductos: reviews por id', () => {
         
     });
+    
+});
+
 
 
 // });

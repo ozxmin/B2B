@@ -2,6 +2,7 @@ const {mongoose} = require('mongoose');
 const {User} = require('./../../db/models/user');
 const {Company} = require('./../../db/models/company');
 const {ConnectedAd} = require('./../../db/models/publicidadConnected');
+const {Product} = require('./../../db/models/product')
 
 const random = (upTo) =>  Math.floor((Math.random() * upTo) + 1);
 
@@ -25,22 +26,27 @@ const datosMinEmpresa = {
 
 
 ///========Products=============
-const productosDeEmpresa = [
-    {
+const productosDeEmpresa = [{
         nombreProducto: 'Producto1',
         categoria: 'Hilaturas',
-        subcategoria: 'Hilo de acrílico',
+        subcategorias: 'Hilo de acrílico',
         descripcion: 'descripcion 1',
         precio: 20,
         inventario: 10,
-    },
-    {
+    }, {
         nombreProducto: 'Producto2',
         categoria: 'Tela',
-        subcategoria: 'Tela acrílica',
+        subcategorias: 'Tela acrílica',
         descripcion: 'descripcion 2',
         precio: 10,
         inventario: 20
+    }, {
+        nombreProducto: 'Producto3',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion 3',
+        precio: 30,
+        inventario: 210
     }
 ]
 
@@ -78,7 +84,7 @@ const adsConnected =  [
 
 const populateDB = (done) => {
     Promise.all([
-        User.remove({}), Company.remove({}), ConnectedAd.remove({})
+        User.remove({}), Company.remove({}), ConnectedAd.remove({}), Product.remove({})
     ]).then(() => {
         // doesnt call middleware, dosent hash password
         return ConnectedAd.insertMany(adsConnected);

@@ -218,7 +218,7 @@ route.post('/agregaProducto', authenticate, (req, res) => {
     const usuario = req.user;
 
     usuario.agregaProducto(datosProducto).then((productoAgregado) => {
-        console.log(productoAgregado);
+        // console.log(productoAgregado);
         res.status(201).send(productoAgregado);
     }).catch((err) => {
         console.log(err);
@@ -270,10 +270,10 @@ route.patch('/editaProducto/:id', authenticate, (req, res) => {
 route.get('/producto/:id', (req, res) => {
     const productId = isThisValidId(req.params.id, res);
     Product.find({_id: productId}).then((producto) => {
-        if (producto.length < 1) {
+        if (producto.length < 1 || req.params.id === null) {
             res.status(404).send({message: "producto no encontrado"});
         } else  { res.status(200).send(producto); }
-    }).catch(err => { res.status(404).send(err); });
+    }).catch(err => { res.status(400).send(err); });
 });
 
 //Devuelve todos los productos de una categoria
@@ -305,7 +305,7 @@ route.get('/categoria/:categoria/:subcategoria', (req, res) => {
 //-----
 const isThisValidId = ((id, res) => {
     if(!ObjectID.isValid(id)) {
-        return res.status(408).send({ "message":"ID no valido" });
+        return res.status(411).send({ "message":"ID no valido" });
     } else {
         return mongoose.Types.ObjectId(id);
     }

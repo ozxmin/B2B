@@ -114,7 +114,6 @@ UserSchema.methods.agregaProducto = function (datosProducto) {
                 return Promise.resolve(productoGuardado);
             });
         }).catch((err) => {
-            console.log('error===========');
             console.log(err);
             return Promise.reject('err');
         });
@@ -133,8 +132,7 @@ UserSchema.methods.getCompany = function (id) {
         if(!companyFound) {
             return Promise.reject('compania no encontrada');
         }
-        console.log('resolved!!!!');
-        console.log(companyFound);
+
         return Promise.resolve(companyFound);
     }).catch((err) => {
         console.log(err);
