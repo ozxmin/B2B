@@ -56,7 +56,7 @@ const ProductSchema = new Schema({
     oferta: Number,
     comentariosProducto: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'reviews'
+        ref: 'resenas'
     }]
 });
 

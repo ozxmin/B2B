@@ -94,7 +94,7 @@ describe('Registro admin y empresa', () => {
         done();
     });
 
-    it('logout', (done) => {
+    it('logout: Borra el token usado en la sesion', (done) => {
         request(app).delete('/logout')
             .set('x-auth', tokenUsuario)
             .send()
@@ -110,27 +110,27 @@ describe('Registro admin y empresa', () => {
         done();
     });
 
-    it('login', (done) => {
+    it('login: agrega un token al llavero', (done) => {
         request(app).post('/login')
             .send({email: emailUsuario, password: 'contrasena'})
             .expect(200)
             .end((err, res) => {
-
-                User.find({nombre: nombreUsuario}).then((loggedIn) => {
-                    
+                User.find({nombre: nombreUsuario}).then((loggedIn) => {                    
                     expect(loggedIn[0].tokens.length).toBeGreaterThan(0);
-                    expect(loggedIn[0].tokens[0].token).toEqual(res.body.tokens[0].token);
+                    expect(loggedIn[0].tokens[0].token).toBe(res.body.tokens[0].token);
                 }).catch((err) => {
                     console.log(err);
                     return done(err);
-                })
-            })
+                });
+            });
         done();
     });
 
     xit('/completaEmpresa Comprleta registro empresa', (done) => {
         done();
     });
+
+    xit('Calcula los costos de membresia correctamente');
 
 });
 

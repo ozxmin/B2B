@@ -193,7 +193,29 @@ route.delete('/borraMiUsuario', authenticate, (req, res) => {
     }).catch((error) => {
         res.status(400).send(error);
     });
+});
 
+//recibe el id de producto en el request
+route.post('/comentarProducto', authenticate, (req, res) => {
+    const {Review} = require('./../db/models/reviews');
+    const comentario = _.pick(req.body, ['comentario', 'titulo']);
+    const productoId = req.body.productId;
+    let usuario = req.user;
+    console.log(productoId);
+    let resena = new Review(comentario);
+    resena.autor = usuario.nombre;
+    resena.autorRef = usuario._id;
+
+    Product.findOne({_id: productoId}).then((productoEncontrado) => {
+        productoEncontrado.comentariosProducto.push(resena)
+        Promise.all([productoEncontrado.save(), resena.save()]).then((algo) => {
+            res.status(201).send(algo[1]);
+        });
+    }).catch((err) => {
+        console.log(err);
+        res.status(400).send(err);
+    })
+    
 });
 
 //=========================Private Product API=========================
