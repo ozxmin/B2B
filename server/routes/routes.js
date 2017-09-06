@@ -9,6 +9,8 @@ const {User} = require('./../db/models/user');
 const {Company} = require('./../db/models/company');
 const {ConnectedAd} = require('./../db/models/publicidadConnected');
 const {authenticate} = require('./../routes/middleware/authenticate');
+const {Review} = require('./../db/models/reviews');
+
 
 
 //============================= Rutas exportadas a express (server.js)  ==================================
@@ -86,22 +88,6 @@ route.get('/producto/:id', (req, res) => {
         } else  { res.status(200).send(producto); }
     }).catch(err => { res.status(404).send(err); });
 });
-
-
-route.patch('/agregaProducto', authenticate, (req, res) => {
-    const datosProducto = _.pick(req.body, editablesDeProducto);
-    const usuario = req.user;
-    const producto = new Product(datosProducto);
-    usuario.productosUsuario.push(producto);
-    producto.vendedor = usuario;
-
-    Promise.all([usuario.save(), producto.save()]).then((usuario) => {
-        res.status(201).send({message: "producto agregado"});
-    }).catch(err => {
-        res.status(400).send(err);
-    });
-});
-
 
 //=========================Rutas Publicas Usuario =========================
 
@@ -197,7 +183,6 @@ route.delete('/borraMiUsuario', authenticate, (req, res) => {
 
 //recibe el id de producto en el request
 route.post('/comentarProducto', authenticate, (req, res) => {
-    const {Review} = require('./../db/models/reviews');
     const comentario = _.pick(req.body, ['comentario', 'titulo']);
     const productoId = req.body.productId;
     let usuario = req.user;
@@ -205,8 +190,11 @@ route.post('/comentarProducto', authenticate, (req, res) => {
     let resena = new Review(comentario);
     resena.autor = usuario.nombre;
     resena.autorRef = usuario._id;
-
+    isThisValidId(productoId);
     Product.findOne({_id: productoId}).then((productoEncontrado) => {
+        if(!productoEncontrado){
+            res.status(404).send('producto no encontrado', err);
+        }
         productoEncontrado.comentariosProducto.push(resena)
         Promise.all([productoEncontrado.save(), resena.save()]).then((algo) => {
             res.status(201).send(algo[1]);
@@ -225,15 +213,6 @@ const editablesDeProducto = [
     'precio','fichaTech','fotos', 'categoria','subcategorias', 'inventario'
 ];
 
-//Devuelve todos los productos de un usuario
-route.get('/misProductos', authenticate, (req, res) => {
-    let usuario = req.user;
-    usuario.populate({path: 'productosUsuario'}).execPopulate().then((usuario) => {
-        const productos = usuario.productosUsuario;
-        res.status(200).send(productos);
-    })
-});
-
 //Crea un producto nuevo y lo agrega a su usuario
 route.post('/agregaProducto', authenticate, (req, res) => {
     const datosProducto = _.pick(req.body, editablesDeProducto);
@@ -246,16 +225,6 @@ route.post('/agregaProducto', authenticate, (req, res) => {
         console.log(err);
         res.status(400).send(err);
     });
-
-    // const producto = new Product(datosProducto);
-    //usuario.agregaproducto
-    // usuario.productosUsuario.push(producto);
-    // producto.vendedor = usuario;
-    // Promise.all([usuario.save(), producto.save()]).then((usuario) => {
-    //     res.status(201).send({message: "producto agregado"});
-    // }).catch(err => {
-    //     res.status(400).send(err);
-    // });
 
 });
 
@@ -323,6 +292,26 @@ route.get('/categoria/:categoria/:subcategoria', (req, res) => {
     });
 });
 
+route.get('/getComentarios/:productId', (req, res) => {
+    const productoId = req.params.productId;
+    isThisValidId(productoId);
+    Product.findById(productoId).then((productoEncontrado) => {
+        if(!productoEncontrado){
+            res.status(404).send('producto no encontrado', err);
+        }  
+        productoEncontrado.populate({path: 'comentariosProducto'}).execPopulate().then((filledComments) => {
+            res.status(200).send(filledComments.comentariosProducto);
+        }).catch((err) => {
+            console.log(err);
+            res.status(400).send(err);
+    })
+    });
+
+});
+
+
+
+
 //Utils
 //-----
 const isThisValidId = ((id, res) => {
@@ -335,3 +324,35 @@ const isThisValidId = ((id, res) => {
 
 
 }
+
+
+
+
+
+
+
+//// ---- Deprecated APIs 
+
+// route.patch('/agregaProducto', authenticate, (req, res) => {
+//     const datosProducto = _.pick(req.body, editablesDeProducto);
+//     const usuario = req.user;
+//     const producto = new Product(datosProducto);
+//     usuario.productosUsuario.push(producto);
+//     producto.vendedor = usuario;
+
+//     Promise.all([usuario.save(), producto.save()]).then((usuario) => {
+//         res.status(201).send({message: "producto agregado"});
+//     }).catch(err => {
+//         res.status(400).send(err);
+//     });
+// });
+
+
+//Devuelve todos los productos de un usuario
+// route.get('/misProductos', authenticate, (req, res) => {
+//     let usuario = req.user;
+//     usuario.populate({path: 'productosUsuario'}).execPopulate().then((usuario) => {
+//         const productos = usuario.productosUsuario;
+//         res.status(200).send(productos);
+//     })
+// });
