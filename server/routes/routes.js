@@ -71,7 +71,6 @@ route.get('/getDiccionarioCategorias', (_, res) => {
 
 
 route.get('/getAdsConnected/:number',(req, res) => {
-
     ConnectedAd.findByAdNumber(req.params.number).then((connectedAd) => {
         res.status(200).send(connectedAd);
     }).catch((err) => {
@@ -159,17 +158,6 @@ route.get('/miUsuario', authenticate, (req, res) => {
     res.send(usuario);
 });
 
-//recibe campos a actualizar del usuario, solo los permitidos serán actualizados
-route.patch('/actualizaMiUsuario', authenticate,(req, res) => {
-    //_.pick allow us to choose which properties are available for update
-    const datosUsuario = _.pick(req.body, datosModificablesPorUsuario);
-    let usuario = req.user;
-    usuario.update({$set: datosUsuario}, {new: true}).then((usuario) => {
-        res.send(usuario);
-    }).catch((error) => {
-        res.status(400).send(error);
-    });
-});
 
 //borra usuario
 route.delete('/borraMiUsuario', authenticate, (req, res) => {
@@ -180,6 +168,38 @@ route.delete('/borraMiUsuario', authenticate, (req, res) => {
         res.status(400).send(error);
     });
 });
+
+
+//pensando en ser utilizado al completar el registro, aunque tambien para
+// modificar datos posteriormente
+route.patch('/completaRegistroEmpresa', authenticate, (req, res) => {
+    //cuentaBancaria, membresia, suscripcion, nombreCuentaHabiente, 
+    const datosModificables = [
+        'nombreEmpresa', 'logotipo', 'ubicacion', 'direccion', 'intereses',
+        'giro', 'rfc', 'descripcionEmpresa'
+    ];
+    const datosEmpresa = _.pick(req.body, datosModificables);
+    const usuario = req.user;
+
+    if(usuario.rol != 'admin') {
+        res.status(403).send(err);
+    }
+
+    usuario.getCompany(usuario.empresaRef).then((compania) => {
+        console.log(compania);
+        if(!compania) {
+            res.status(404).send('compania no encontrada', err);     
+        }
+        compania.update({$set: datosEmpresa}, {new: true}).then((actualizada) => {
+            res.status(200).send(actualizada)
+        });
+    }).catch((err) => {
+        console.log(err);
+        res.status(400).send(err);
+    });
+
+});
+
 
 //recibe el id de producto en el request
 route.post('/comentarProducto', authenticate, (req, res) => {
@@ -355,4 +375,16 @@ const isThisValidId = ((id, res) => {
 //         const productos = usuario.productosUsuario;
 //         res.status(200).send(productos);
 //     })
+// });
+
+//recibe campos a actualizar del usuario, solo los permitidos serán actualizados
+// route.patch('/actualizaMiUsuario', authenticate,(req, res) => {
+//     //_.pick allow us to choose which properties are available for update
+//     const datosUsuario = _.pick(req.body, datosModificablesPorUsuario);
+//     let usuario = req.user;
+//     usuario.update({$set: datosUsuario}, {new: true}).then((usuario) => {
+//         res.send(usuario);
+//     }).catch((error) => {
+//         res.status(400).send(error);
+//     });
 // });
