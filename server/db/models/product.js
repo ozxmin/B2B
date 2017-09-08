@@ -1,6 +1,7 @@
 //
 // Modelo Mongoose para los productos
 //
+
 const env = require('./../../config');
 const mongoose = require('mongoose');
 const {diccionarioCategorias} = require('./categorias');

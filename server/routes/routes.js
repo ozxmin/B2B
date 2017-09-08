@@ -324,11 +324,23 @@ route.get('/getComentarios/:productId', (req, res) => {
         }).catch((err) => {
             console.log(err);
             res.status(400).send(err);
-    })
+        });
     });
-
 });
 
+//se presume que ya se tiene en cache la informacion del producto y el id de la empresa
+route.get('/provedorDeProducto/:companyId', (req, res) => {
+    const companyId = req.params.companyId;
+    isThisValidId(companyId);
+    Company.findById(companyId).then((company) => {
+        if(!company) {
+            res.status(404).send('error, provedor no encontrado');
+        }
+        res.status(200).send(company);
+    }).catch((err) => {
+        console.log(err);
+    });
+});
 
 
 

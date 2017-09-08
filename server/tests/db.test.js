@@ -184,7 +184,6 @@ describe('Home Publico', () => {
                 });
                 expect(producto.subcategorias).toNotEqual(null);
                 expect(producto.subcategorias).toEqual(res.body[0].subcategorias);
-
             })
             .end((err, res) => {
                 if(err) {
