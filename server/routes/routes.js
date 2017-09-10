@@ -203,20 +203,23 @@ route.patch('/completaRegistroEmpresa', authenticate, (req, res) => {
 
 //recibe el id de producto en el request
 route.post('/comentarProducto', authenticate, (req, res) => {
-    const comentario = _.pick(req.body, ['comentario', 'titulo']);
+    // const comentario = _.pick(req.body, ['comentario', 'titulo']);
     const productoId = req.body.productId;
     let usuario = req.user;
-    console.log(productoId);
-    let resena = new Review(comentario);
-    resena.autor = usuario.nombre;
-    resena.autorRef = usuario._id;
+    let resena = new Review({
+        titulo: req.body.titulo,
+        contenido: req.body.contenido,
+        autor: usuario.nombre,
+        autorRef: usuario._id
+    });
     isThisValidId(productoId);
     Product.findOne({_id: productoId}).then((productoEncontrado) => {
         if(!productoEncontrado){
-            res.status(404).send('producto no encontrado', err);
+            res.status(404).send('producto no encontrado');
         }
         productoEncontrado.comentariosProducto.push(resena)
         Promise.all([productoEncontrado.save(), resena.save()]).then((algo) => {
+            // console.log(algo);
             res.status(201).send(algo[1]);
         });
     }).catch((err) => {
@@ -319,6 +322,7 @@ route.get('/getComentarios/:productId', (req, res) => {
         if(!productoEncontrado){
             res.status(404).send('producto no encontrado', err);
         }  
+        //productoEncontrado.populate('comentariosProducto').then((filledComments) => {
         productoEncontrado.populate({path: 'comentariosProducto'}).execPopulate().then((filledComments) => {
             res.status(200).send(filledComments.comentariosProducto);
         }).catch((err) => {
@@ -346,18 +350,18 @@ route.get('/provedorDeProducto/:companyId', (req, res) => {
 
 //Utils
 //-----
-const isThisValidId = ((id, res) => {
-    if(!ObjectID.isValid(id)) {
-        return res.status(411).send({ "message":"ID no valido" });
+
+const isThisValidId = ((myId, res) => {
+    if(!ObjectID.isValid(myId)) {
+        return res.status(411).send(`id no valido: ${myId}`);
     } else {
-        return mongoose.Types.ObjectId(id);
+        return mongoose.Types.ObjectId(myId);
     }
 });
 
 
+
 }
-
-
 
 
 

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
+const {User} = require('./user');
 
 const ReviewSchema = new Schema({
     titulo: {
@@ -7,7 +8,7 @@ const ReviewSchema = new Schema({
         minlenght: 3,
         required: true
     },
-    comentario: {
+    contenido: {
         type: String,
         minlenght: 3,
         required: true

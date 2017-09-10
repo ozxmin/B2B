@@ -2,7 +2,8 @@ const {mongoose} = require('mongoose');
 const {User} = require('./../../db/models/user');
 const {Company} = require('./../../db/models/company');
 const {ConnectedAd} = require('./../../db/models/publicidadConnected');
-const {Product} = require('./../../db/models/product')
+const {Product} = require('./../../db/models/product');
+const {Review} = require('./../../db/models/reviews');
 
 const random = (upTo) =>  Math.floor((Math.random() * upTo) + 1);
 
@@ -50,6 +51,11 @@ const productosDeEmpresa = [{
     }
 ]
 
+//===============Comentarios
+const comentarios = {
+	titulo: 'itulo Prueba',
+	comentario: `comentario prueba ${random(100)}`
+}
 
 
 
@@ -84,16 +90,17 @@ const adsConnected =  [
 
 const populateDB = (done) => {
     Promise.all([
-        User.remove({}), Company.remove({}), ConnectedAd.remove({}), Product.remove({})
+        User.remove({}), Company.remove({}), ConnectedAd.remove({}), 
+        Product.remove({}), Review.remove({})
     ]).then(() => {
         // doesnt call middleware, dosent hash password
         return ConnectedAd.insertMany(adsConnected);
     }).then(() => done()
-    ).catch((err) => { done(err)});
+    ).catch((err) => {done(err)});
 }
 
 
 
 module.exports = {
-    populateDB, adsConnected, datosMinEmpresa, adminGoodProbe, random, productosDeEmpresa
+    populateDB, adsConnected, datosMinEmpresa, adminGoodProbe, random, productosDeEmpresa, comentarios
 }

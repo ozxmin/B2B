@@ -8,6 +8,7 @@ const {app} = require('./../server');
 const {User} = require('./../db/models/user');
 const {Company} = require('./../db/models/company');
 const {ConnectedAd} = require('./../db/models/publicidadConnected');
+const {Review} = require('./../db/models/reviews');
 
 // Test Global variables
 const {
@@ -16,11 +17,10 @@ const {
     datosMinEmpresa, 
     adminGoodProbe,
     random,
-    productosDeEmpresa
+    productosDeEmpresa,
+    comentarios
 } = require('./seed/seed')
-
 let tokenUsuario, idProductoAgregado, nombreUsuario, emailUsuario;
-
 
 //================> Set up
 before(populateDB);
@@ -29,8 +29,8 @@ before(populateDB);
 
 //=================Registro
 describe('Registro admin y empresa', () => {
+    
     it('/registroadmin: guarda admin en DB', (done) => {
-        
         request(app).post('/registroadmin')
             .send(adminGoodProbe)
             .expect((res) => {
@@ -48,11 +48,12 @@ describe('Registro admin y empresa', () => {
                     expect(usuarios[0].email).toBe(adminGoodProbe.email);
                     nombreUsuario = usuarios[0].nombre
                     emailUsuario = usuarios[0].email
-                    done();
+                    
                 }).catch((e) => {
                     console.log(e);
-                    done(e)
+                    return done(e)
                 });
+                done();
             });
     });
 
@@ -69,11 +70,11 @@ describe('Registro admin y empresa', () => {
             .end((err, res) => {
                 if(err) {
                     console.log(err);
-                    done(err);
+                    return done(err);
                 }
                 Company.find({}).then((empresas)=> {
-                    done();
                 }).catch((e) => done(e));
+                done();
             });
     });
 
@@ -88,10 +89,10 @@ describe('Registro admin y empresa', () => {
                 idProductoAgregado = res.body._id
                 if(err) {
                     console.log(err);
-                    done(err);
+                    return done(err);
                 }
+                done();
             });
-        done();
     });
 
     it('logout: Borra el token usado en la sesion', (done) => {
@@ -104,10 +105,13 @@ describe('Registro admin y empresa', () => {
                     expect(loggedOutUser[0].tokens.length).toBeFewerThan(1);
                 }).catch((err) => {
                     console.log(err);
-                    done(err);
+                    return done(err);
                 })
-            })
-        done();
+                if(err) {
+                 return done(err)
+                }
+                done();
+            });
     });
 
     it('login: agrega un token al llavero', (done) => {
@@ -122,14 +126,11 @@ describe('Registro admin y empresa', () => {
                     console.log(err);
                     return done(err);
                 });
+                done();
             });
-        done();
     });
 
-    xit('/completaEmpresa Comprleta registro empresa', (done) => {
-        done();
-    });
-
+    xit('/completaEmpresa Comprleta registro empresa', (done) => {done()});
     xit('Calcula los costos de membresia correctamente');
 
 });
@@ -152,8 +153,8 @@ describe('Home Publico', () => {
                     console.log(err);
                     return done(err);
                 }
+                done();
             });
-        done();
     });
 
     it('/getDiccionario: todas las categorias y sub disponibles', (done) => {
@@ -170,8 +171,8 @@ describe('Home Publico', () => {
                 console.log('err Diccionario: ',err);
                 return done(err);
             }
+            done();
         });
-        done();
     });
 
     it('/producto: devuelve los detalles de un producto dado su ID', (done) => {
@@ -182,35 +183,70 @@ describe('Home Publico', () => {
                 let producto = productosDeEmpresa.find((producto) => {
                     return producto.nombreProducto === res.body[0].nombreProducto   
                 });
+                expect(idProductoAgregado).toNotBe(null)
                 expect(producto.subcategorias).toNotEqual(null);
                 expect(producto.subcategorias).toEqual(res.body[0].subcategorias);
             })
             .end((err, res) => {
                 if(err) {
-                    console.log(err);
                     return done(err);
                 }
+                done();
             });
-        done();
-    });
-
-    xit('/getProductosDestacadosHome', (done) => {
-        done();
-    });
-
-    xit('/getProductosDestacadosXCategoria', (done) => {
-        done();
     });
 
 
+    it('/comentarProducto: Agrega review de un usuario a un producto', (done) => {
+        const comentario = {
+            contenido: comentarios.comentario,
+            titulo: comentarios.titulo,
+            productId: idProductoAgregado
+        };
+        request(app).post('/comentarProducto')
+            .send(comentario)
+            .set('x-auth', tokenUsuario)
+            .expect(201)
+            .end((err, res) => {
+                if (err) {
+                    return done(err);
+                }
+                done();
+            });
+    });
+
+   
+    xit('/getProductosDestacadosHome', (done) => {done();});
+    xit('/getProductosDestacadosXCategoria', (done) => {done();});
 });
 
 
 ///================Productos
 
-describe('Productos', () => {
-    xit('/getReviewsProductos: reviews por id', (done) => {
+describe('Productos Pubilco', () => {
+
+  
+
+    xit('/getReviewsProductos: devuelve reviews por id de producto', (done) => {
         done();
     });
     
 });
+
+
+
+
+        // request(app).post('/comentarProducto')
+        //     .set('x-auth', tokenUsuario)
+        //     .send(comentario)
+        //     .expect(() => {
+        //         expect('oeuj').toBe(3);        
+        //     })
+        //     .end((err, res) => {
+        //         // console.log(res.text);
+        //         // console.log(err);
+        //         if(err) {
+        //             return done(err);
+        //         }
+        //         done();
+        //     });
+        // // return done();
