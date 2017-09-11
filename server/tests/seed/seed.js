@@ -48,7 +48,84 @@ const productosDeEmpresa = [{
         descripcion: 'descripcion 3',
         precio: 30,
         inventario: 210
+    }, {
+        nombreProducto: 'Delantal1',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion 1',
+        precio: random(10),
+        inventario: random(10)
+    }, {
+        nombreProducto: 'Delantal2',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion 1',
+        precio: random(10),
+        inventario: random(10)
+    },
+    {
+        nombreProducto: 'Delantal3',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion ',
+        precio: random(10),
+        inventario: random(10)
+    },
+    {
+        nombreProducto: 'Delantal4',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion ',
+        precio: random(10),
+        inventario: random(10)
+        }, {
+        nombreProducto: 'Delantal8',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion 1',
+        precio: random(10),
+        inventario: random(10)
+    },
+    {
+        nombreProducto: 'Delantal9',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion ',
+        precio: random(10),
+        inventario: random(10)
+    },
+    {
+        nombreProducto: 'Delantal4',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion ',
+        precio: random(10),
+        inventario: random(10)
+    }, {
+        nombreProducto: 'Delantal5',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion 1',
+        precio: random(10),
+        inventario: random(10)
+    },
+    {
+        nombreProducto: 'Delantal6',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion ',
+        precio: random(10),
+        inventario: random(10)
+    },
+    {
+        nombreProducto: 'Delantal7',
+        categoria: 'Ropa especial',
+        subcategorias: 'Delantal',
+        descripcion: 'descripcion ',
+        precio: random(10),
+        inventario: random(10)
     }
+
 ]
 
 //===============Comentarios

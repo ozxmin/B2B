@@ -345,6 +345,21 @@ route.get('/provedorDeProducto/:companyId', (req, res) => {
         console.log(err);
     });
 });
+// GET: getProductoPorCategoria(subcategoria, stride, pagina)
+route.get('/productosDe/:subcategoria/:page/:shown', (req, res) => {
+    Product.find({subcategorias: req.params.subcategoria})
+        .sort({agregado: 1})
+        .skip(parseInt(req.params.page))
+        .limit(parseInt(req.params.shown))
+        .then((productos) => {
+            res.status(200).send(productos);
+        }).catch((err) => {
+            console.log(err);
+            res.status(400).send(err);
+        });
+});
+
+
 
 
 

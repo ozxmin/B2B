@@ -81,7 +81,9 @@ describe('Registro admin y empresa', () => {
     it('Agrega producto', (done) => {
         const myRandom = random(productosDeEmpresa.length)
         const producto = productosDeEmpresa[myRandom-1];
-        request(app).post('/agregaProducto')
+
+        productosDeEmpresa.forEach(function(producto) {
+            request(app).post('/agregaProducto')
             .set('x-auth', tokenUsuario)
             .send(producto)
             .expect(201)
@@ -91,8 +93,11 @@ describe('Registro admin y empresa', () => {
                     console.log(err);
                     return done(err);
                 }
-                done();
-            });
+               
+            });            
+        }, this);
+        done();
+
     });
 
     it('logout: Borra el token usado en la sesion', (done) => {
@@ -115,6 +120,8 @@ describe('Registro admin y empresa', () => {
     });
 
     it('login: agrega un token al llavero', (done) => {
+
+
         request(app).post('/login')
             .send({email: emailUsuario, password: 'contrasena'})
             .expect(200)
