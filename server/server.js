@@ -6,6 +6,7 @@ const routes  = require('./routes/routes');
 
 //-------API ROUTES---
 let app = express();
+
 //middleware configuration, which will parse the requests
 app.use(bodyParser.json());
 //Injection of app into routes
