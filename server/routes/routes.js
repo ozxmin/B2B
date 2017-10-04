@@ -24,6 +24,17 @@ const datosAdmin = ['nombre', 'apellido', 'email', 'rol', 'password']
 //Se utiliza al registrarse por primera vez el usuario adiministrador
 //Se guarda el usuario y se devuelve el token el cual será utilizado para crear 
 //la empresa en el momento deseado
+
+route.get('/', (req, res) => {
+    let stats = {
+        'message': 'Test',
+        'req': req,
+        'res': res
+    };
+    res.status(200).send(stats);
+});
+
+
 route.post('/registroadmin', (req, res) => {
     let fields = _.pick(req.body, datosAdmin);
     
