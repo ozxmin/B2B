@@ -26,12 +26,7 @@ const datosAdmin = ['nombre', 'apellido', 'email', 'rol', 'password']
 //la empresa en el momento deseado
 
 route.get('/', (req, res) => {
-    let stats = {
-        'message': 'Test',
-        'req': req,
-        'res': res
-    };
-    res.status(200).send(stats);
+    res.status(200).send('<h1>Landing Page</h1>');
 });
 
 
