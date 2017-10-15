@@ -26,7 +26,8 @@ const datosAdmin = ['nombre', 'apellido', 'email', 'rol', 'password']
 //la empresa en el momento deseado
 
 route.get('/', (req, res) => {
-    res.status(200).send('<h1>Landing Page</h1>');
+    let placeHolder = '<h1>Landing Page B2B</h1><h2>El front llama a los apis necesarios desde aqui</h2>'
+    res.status(200).send(placeHolder);
 });
 
 
