@@ -1,12 +1,14 @@
 //Vendor
 const mongoose = require('mongoose');
+const mongo = require('mongodb');
 const validator = require('validator');
 const _ = require('lodash');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 //Locals
-const env = require('../../config');
-const Product = require('./product.js');
+const env = require('./../../config');
+const {Company} = require('./company');
+const {Product} = require('./product');
 const Schema = mongoose.Schema;
 //enviroment
 const access = process.env.ACCESS;
@@ -15,11 +17,16 @@ const secretValue = process.env.SECRET_VALUE;
 
 // object to configure schema
 const UserSchema = new Schema ({
-    user: {
+    nombre: {
         type: String,
         required: true,
         minlength: 3,
-        unique: true,
+        trim: true
+    },
+    apellido: {
+        type: String,
+        required: true,
+        minlength: 3,
         trim: true
     },
     email: {
@@ -40,83 +47,104 @@ const UserSchema = new Schema ({
         required: true,
         minlength: 6
     },
-    direccion: String,
-    ubicacion: {
-        type: {
-            lon: Number,
-            lat: Number
-        }
-    },
-    rfc: {
+    rol: {
         type: String,
-        length: 6
+        enum: ['admin', 'compras', 'ventas'],
+        // required: true
     },
-    empresa: String,
-    logotipo: String,
+    nombreEmpresa: String,
+    empresaRef: {
+        type: Schema.Types.ObjectId,
+        ref: 'companias',
+    },
     celular: {
-        type: Number,
+        type: Number,  
         // isMobilePhone(str, locale)
     },
-    descripcion: String,
     creado: {
         //unix date
         type: Date,
         default: Date.now
     },
-    productosUsuario: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Productos'
-    }],
     tokens: [{
-        access: {
-            type: String,
-            required: true
-        },
-        token: {
-            type: String,
-            required: true
-        }
+        access:  String,
+        token: String,
     }]
 });
 
 
 //=========================Instance Methods=========================
 
-//Encuentra el producto de un usuario por su ID
-UserSchema.methods.getProduct = function(id) {
+UserSchema.methods.registraEmpresa = function(datosEmpresa) {
+    //Shaky route
+    //Revisar bien lo de las promesas por que dentro del .then no regresa promesas resueltas
+    // revisar el error de unhadled error duplicate key en routes.js
+    let admin = this;
+    let nuevaEmpresa = new Company(datosEmpresa);
+    let empresaGuardada
+    nuevaEmpresa.miembros = admin._id;
+
+    nuevaEmpresa.save().then((empresaDB) => {
+        admin.update({$set: {
+            nombreEmpresa: datosEmpresa.nombreEmpresa,
+            empresaRef: empresaDB._id
+        }}, {new: true}).then((adminUpd) => {     
+            // console.log(adminUpd);    
+        });
+    }).catch((err) => {
+        console.log('error save Empresa:',err);
+        return Promise.reject(err);
+    });
+    return Promise.resolve(nuevaEmpresa);
+};
+
+
+//Agrega un producto a los productos de la empresa y los guarda en db
+// --no le caería mal una refacorización para reducir el numero de returns
+UserSchema.methods.agregaProducto = function (datosProducto) {
     let usuario = this;
-    // let productId = mongoose.Types.ObjectId(id);
-    let productId = Schema.Types.ObjectId(id);
+//encuentra compañia de usuario
+    return usuario.getCompany(usuario.empresaRef).then((compania) => {
+        let producto = new Product(datosProducto);
+        producto.vendedor = compania;
 
-    let userProducts = mongoose.model('Productos');
-    userProducts.find({_id: mongoose.Types.ObjectId(id)}).then((producto) => {
-        console.log(producto);
-        return producto
-    }).catch(err => {
-        return err;
-    })
+        return producto.save().then((productoGuardado) => {
+            compania.productosEmpresa.push(productoGuardado);
+            return compania.save().then((companiaGuardada) => {
+                return Promise.resolve(productoGuardado);
+            });
+        }).catch((err) => {
+            console.log(err);
+            return Promise.reject('err');
+        });
+    });
+};
 
-    let productoEncontrado;
-    productoEncontrado = usuario.products.id(productId);
-    if (!productoEncontrado) {
-        return Promise.reject('producto no encontrado');
-    }
-    return Promise.resolve(productoEncontrado);
-}
+
+UserSchema.methods.getCompany = function (id) {
+    const user = this;
+    const companyId = mongoose.Types.ObjectId(String(id))
+    // const Companies = mongoose.model('companias');
+    return Company.findOne({_id: companyId}).then((companyFound) => {
+        if(!companyFound) {
+            return Promise.reject('compania no encontrada');
+        }
+
+        return Promise.resolve(companyFound);
+    }).catch((err) => {
+        console.log(err);
+        return Promise.reject(err);
+    });
+};
 
 //Genera un Token de autenticacion
 UserSchema.methods.generateAuthToken = function() {
     //`this` stores the individual document
-
     var user = this;
     // random value for access
     var token = jwt.sign({_id: user._id.toHexString(), access}, secretValue).toString();
-
     user.tokens.push({access, token});
     // so we can chain another then on server.js
-    console.log(access);
-    console.log(secretValue);
-    console.log(token);
     return user.save().then(() => {
         return token;
     });
@@ -183,8 +211,7 @@ UserSchema.pre('save', function(next) {
             });
         });
     } else {
-        //not modified
-        next();
+        next(); //not modified
     }
 });
 
@@ -192,18 +219,8 @@ UserSchema.pre('remove', function(next) {
     let user = this;
     let userProducts = mongoose.model('Productos');
     userProducts.remove({_id: {$in: user.productosUsuario}}).then(() => next());
-})
+});
 
 
-let User = mongoose.model('Users', UserSchema);
+let User = mongoose.model('usuarios', UserSchema);
 module.exports = {User};
-
-
-
-//Overrides what gets sent back to the client in the json
-// UserSchema.methods.toJSON = function() {
-//     let user = this;
-//     //converts mongoose object to regular object
-//     let userObject = user.toObject();
-//     return _.pick(userObject, ['_id','email']);
-// }

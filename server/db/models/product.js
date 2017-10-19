@@ -1,22 +1,30 @@
 //
 // Modelo Mongoose para los productos
 //
-const env = require('../../config');
+
+const env = require('./../../config');
 const mongoose = require('mongoose');
+const {diccionarioCategorias} = require('./categorias');
 const Schema = mongoose.Schema;
-const diccionarioCategorias = require('./categorias.js');
+
 
 const ProductSchema = new Schema({
     vendedor: {
         type: Schema.Types.ObjectId,
-        ref: 'Users'
+        ref: 'empresa',
+        required: true
     },
     nombreProducto: {
         type: String,
         required: true,
         minlength: 3,
         trim: true
+        
     },
+    categoria: String,
+    subcategorias: [{
+        type: String,
+    }],
     descripcion: String,
     ventaMinima: {
         type: Number,
@@ -45,10 +53,11 @@ const ProductSchema = new Schema({
         type: String,
         required: false
     }],
-    estado: Boolean, //Disponible(?)
-    categoria: String,
-    subcategorias: [{
-        type: String,
+    disponible: Boolean, //Disponible(?)
+    oferta: Number,
+    comentariosProducto: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'resenas'
     }]
 });
 
@@ -57,6 +66,7 @@ ProductSchema.pre('save', function(next, err) {
     // let categoria_req = this.categorias;
     let categoria_req = this.categoria;
     let subcategorias_req = this.subcategorias;
+
     if (!diccionarioCategorias[categoria_req]) {
         err({"error": `${categoria_req} no es una categoria`})
     } else {
@@ -71,6 +81,5 @@ ProductSchema.pre('save', function(next, err) {
 });
 
 
-const Product = mongoose.model('Productos', ProductSchema);
-
-module.exports = Product;
+let Product = mongoose.model('productos', ProductSchema);
+module.exports = {Product};
