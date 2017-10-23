@@ -35,12 +35,6 @@ const CompanySchema = new Schema ({
     //monto: virtualType
     intereses: {
         type: [String],
-        // validate: {
-        //   validator: function(v) {
-        //       return (v.lenght > 10 ).test(v)
-        //   },
-        //   message: 'No se pueden agregar más intereses'
-        // },
     },
     giro: String,
     cuentaBancaria: {
@@ -61,16 +55,9 @@ const CompanySchema = new Schema ({
         type: Schema.Types.ObjectId,
         ref: 'usuarios'
     }]
-    // ,miembros: [{
-    //     rol: ['admin', 'comerciante'],
-    //     miembro: {
-    //         type: Schema.Types.ObjectId,
-    //         ref: 'usuarios'
-    //     }
-    // }]
-
 });
 
+//Calcula el monto a pagar por una suscripcion; Dada la membresia y el tiempo contratada
 CompanySchema.virtual('montoMembresia').get(function() {
    let company = this;
    let membresia
@@ -96,7 +83,7 @@ CompanySchema.virtual('montoMembresia').get(function() {
 });
 
 
-
+//string del subdominio a utilizar obtenido del nombre de la empresa
 CompanySchema.virtual('subdominio').get(function() {
     return this.nombre;
 })

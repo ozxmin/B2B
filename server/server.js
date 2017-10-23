@@ -9,7 +9,7 @@ let app = express();
 
 //middleware configuration, which will parse the requests
 app.use(bodyParser.json());
-//Injection of app into routes
+//Inyeccion de depondencia app en routes()
 // require('./routes/routes')(app);//
 routes(app);
 app.listen(process.env.NODE_PORT,() => {

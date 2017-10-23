@@ -18,6 +18,7 @@ const ConnectedAdSchema= new Schema ({
     posicion: Number
 });
 
+//valida que exista un ad en la posicion indicada(Int)
 ConnectedAdSchema.statics.findByAdNumber = function(posicion) {
     return this.findOne({posicion: posicion}).then((ad) => {
         if(!ad) {

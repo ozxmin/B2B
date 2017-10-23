@@ -5,9 +5,7 @@ mongoose.Promise = global.Promise;
 const mongoURI = process.env.MONGODB_URI;
 
 
-mongoose.connect(mongoURI).then(() => {
-    
-}, (err) => {
+mongoose.connect(mongoURI).then(() => {}, (err) => {
     console.log('☞ Not able to connect', err);
     console.log(process.env.NODE_PORT);
     console.log(mongoURI);

@@ -61,7 +61,7 @@ const ProductSchema = new Schema({
     }]
 });
 
-//Validar categorias y subcategorias
+//Valida categorias y subcategorias ingresadas existan
 ProductSchema.pre('save', function(next, err) {
     // let categoria_req = this.categorias;
     let categoria_req = this.categoria;
@@ -76,8 +76,6 @@ ProductSchema.pre('save', function(next, err) {
         this.subcategorias = filteredSubCategories
         next();
     }
-
-
 });
 
 

@@ -12,29 +12,27 @@ const {authenticate} = require('./../routes/middleware/authenticate');
 const {Review} = require('./../db/models/reviews');
 
 
-
 //============================= Rutas exportadas a express (server.js)  ==================================
 module.exports = function(route) {
 
+    //Placeholder para el ruta root
+route.get('/', (req, res) => {
+    let placeHolder = '<h1>Landing Page B2B</h1><h2>El front llama a los apis necesarios desde aqui</h2>'
+    res.status(200).send(placeHolder);
+});
 //============================= Rutas empresa  ==================================
 
 const camposRegistroEmpresa = ['nombreEmpresa', 'membresia', 'suscripcion', 'miembros'];
 const datosAdmin = ['nombre', 'apellido', 'email', 'rol', 'password']
 
-//Se utiliza al registrarse por primera vez el usuario adiministrador
+//Se utiliza al registrarse por primera vez una empresa, se crea el usuario con el rol de adiministrador
 //Se guarda el usuario y se devuelve el token el cual será utilizado para crear 
 //la empresa en el momento deseado
-
-route.get('/', (req, res) => {
-    let placeHolder = '<h1>Landing Page B2B</h1><h2>El front llama a los apis necesarios desde aqui</h2>'
-    res.status(200).send(placeHolder);
-});
-
-
+//recibe como parametros los campos de datosadmin = ['nombre', 'apellido', 'email', 'rol', 'password']
 route.post('/registroadmin', (req, res) => {
     let fields = _.pick(req.body, datosAdmin);
-    
     let admin = new User(fields);
+    
     admin.rol = 'admin';
     admin.save().then(() => {
         return admin.generateAuthToken();
@@ -43,7 +41,6 @@ route.post('/registroadmin', (req, res) => {
         const confirmationFields = _.pick(admin, ['nombre','email', 'apellido', 'creado']);
         // custom header `x-header`
         res.status(201).header('x-auth', token).send(confirmationFields);
-        
     }).catch((e) => {
         console.log('/registroAdmin', e);
         res.status(400).send(e);
@@ -52,6 +49,7 @@ route.post('/registroadmin', (req, res) => {
 
 //Despues de guardado el usuario principal se usa registroEmpresa para crear la empresa
 //Y guardar los datos esenciales
+//recibe como parametros los campos de camposRegistroEmpresa
 route.post('/registroEmpresa', authenticate, (req, res) => {
     const datosEmpresa = _.pick(req.body, camposRegistroEmpresa);
     const admin = req.user;
@@ -68,15 +66,18 @@ route.post('/registroEmpresa', authenticate, (req, res) => {
 });
 
 
-
 //=========================Rutas Publicas sistema =========================
-
+//Devuelve el diccionario de las categorias: subcategorias actualmente disponibles. Usado para desplegar el
+//side bar de categorias
+//Los datos se encuentran declados en categorias.js
 route.get('/getDiccionarioCategorias', (_, res) => {
     const {diccionarioCategorias} = require('./../db/models/categorias');
     res.status(200).send(diccionarioCategorias);
 });
 
-
+//devuelve un ad de connected, se especifca el 'indice' del ad en 'number'
+// insertados manualmente en la bd, siguiendo el schema en 
+// publicidadConnected.js
 route.get('/getAdsConnected/:number',(req, res) => {
     ConnectedAd.findByAdNumber(req.params.number).then((connectedAd) => {
         res.status(200).send(connectedAd);
@@ -85,7 +86,7 @@ route.get('/getAdsConnected/:number',(req, res) => {
     });
 });
 
-
+//devuelve la informacion de un producto dado su id 
 route.get('/producto/:id', (req, res) => {
     const productId = isThisValidId(req.params.id, res);
     Product.find({_id: productId}).then((producto) => {
@@ -102,7 +103,9 @@ const datosPublicosUsuario = ['nombre','email', 'direccion', 'ubicacion','rfc','
 const datosModificablesPorUsuario = ['nombre','email','password','ubicacion','rfc','empresa',
     'logotipo','celular','descripcion', 'direccion'];
 
-//crear cuenta, genera token que será usado en las rutas privadas
+// crea cuenta de usuario de 'normal' no 
+// genera token que será usado en las rutas privadas
+//recibe como parametros los campos de datosDatosModificablesPorUsuario
 route.post('/creausuario', (req, res) => {
     const fields = _.pick(req.body, datosModificablesPorUsuario);
     // we'll have the user from the req
@@ -123,11 +126,12 @@ route.post('/creausuario', (req, res) => {
     });
 });
 
-// devuelve un token y lo agrega a la BD
+// devuelve un token de accesso y lo agrega a la BD. Este token se utiliza para
+//confirmar que la sesion está activa en un navegador
+// //recibe como parametros password y email
 route.post('/login', (req, res) => {
-    let credentials = _.pick(req.body, ['user', 'password']);
-
-    User.findByCredentials(credentials.user, credentials.password).then((usuario) => {
+    let credentials = _.pick(req.body, ['email', 'password']);
+    User.findByCredentials(credentials.email, credentials.password).then((usuario) => {
         return usuario.generateAuthToken().then((token) => {
             res.status(200).header('x-auth', token).send(usuario);
         });
@@ -143,7 +147,7 @@ route.delete('/logout', authenticate, (req, res) => {
     }, () => {});
 });
 
-//Muestra un usuario dado su usuario
+//Muestra un los datos de un usuario dado su nombre usuario
 route.get('/b2b/:user', (req, res) => {
     User.findOne({user: req.params.user}).then((usuario) => {
         const perfilPublico = _.pick(usuario, datosPublicosUsuario);
@@ -159,14 +163,13 @@ route.get('/b2b/:user', (req, res) => {
 
 //=========================Rutas Privadas de Usuario=========================
 
-//despliega campos `publicos` del usuario
+//despliega campos `publicos` del usuario loggeado
 route.get('/miUsuario', authenticate, (req, res) => {
     const usuario = _.pick(req.user, datosPublicosUsuario);
     res.send(usuario);
 });
 
-
-//borra usuario
+//borra la cuenta del usuario
 route.delete('/borraMiUsuario', authenticate, (req, res) => {
     let usuario = req.user;
     usuario.remove({usuario: '._id'}).then((usuario) => {
@@ -176,8 +179,7 @@ route.delete('/borraMiUsuario', authenticate, (req, res) => {
     });
 });
 
-
-//pensando en ser utilizado al completar el registro, aunque tambien para
+//diseñado para ser utilizado al completar el registro, aunque tambien para
 // modificar datos posteriormente
 route.patch('/completaRegistroEmpresa', authenticate, (req, res) => {
     //cuentaBancaria, membresia, suscripcion, nombreCuentaHabiente, 
@@ -187,13 +189,11 @@ route.patch('/completaRegistroEmpresa', authenticate, (req, res) => {
     ];
     const datosEmpresa = _.pick(req.body, datosModificables);
     const usuario = req.user;
-
+    //solo el admin puede modificar los datos de la empresa
     if(usuario.rol != 'admin') {
         res.status(403).send(err);
     }
-
     usuario.getCompany(usuario.empresaRef).then((compania) => {
-        console.log(compania);
         if(!compania) {
             res.status(404).send('compania no encontrada', err);     
         }
@@ -207,10 +207,9 @@ route.patch('/completaRegistroEmpresa', authenticate, (req, res) => {
 
 });
 
-
-//recibe el id de producto en el request
+//recibe el id de producto en el request, crea el comentario en la base de datos junto con el id_ref del producto
+//recibe titulo, contenido, autor y autor ref 
 route.post('/comentarProducto', authenticate, (req, res) => {
-    // const comentario = _.pick(req.body, ['comentario', 'titulo']);
     const productoId = req.body.productId;
     let usuario = req.user;
     let resena = new Review({
@@ -243,13 +242,11 @@ const editablesDeProducto = [
     'precio','fichaTech','fotos', 'categoria','subcategorias', 'inventario'
 ];
 
-//Crea un producto nuevo y lo agrega a su usuario
+//Agrega un producto nuevo a la lista de productos de la empresa a la que el usuario pertenece
 route.post('/agregaProducto', authenticate, (req, res) => {
     const datosProducto = _.pick(req.body, editablesDeProducto);
     const usuario = req.user;
-
     usuario.agregaProducto(datosProducto).then((productoAgregado) => {
-        // console.log(productoAgregado);
         res.status(201).send(productoAgregado);
     }).catch((err) => {
         console.log(err);
@@ -258,7 +255,10 @@ route.post('/agregaProducto', authenticate, (req, res) => {
 
 });
 
-//borra producto
+//re hacer este API, llama a un metodo que ya no existe
+//borra producto de la base de datos, 
+//bugfix [comming]: borra la referencia en la ref de la empresa
+//Utiliza el ID del producto y estar logeado
 route.delete('/borraProducto/:id', authenticate, (req, res) => {
     const usuario = req.user;
     const productoId = isThisValidId(req.params.id, res);
@@ -272,7 +272,10 @@ route.delete('/borraProducto/:id', authenticate, (req, res) => {
     });
 });
 
+
+// re hacer este api, getProduct ya no existe
 //edita producto 205 Reset Content
+//recibe los datos declarados en editablesDeProducto
 route.patch('/editaProducto/:id', authenticate, (req, res) => {
     const productoId = isThisValidId(req.params.id, res);
     let usuario = req.user;
@@ -287,7 +290,8 @@ route.patch('/editaProducto/:id', authenticate, (req, res) => {
 
 //========================= Rutas Publicas Productos =========================
 
-//Devuelve producto correspondiente del usuario dado un id
+//Devuelve producto correspondiente del usuario dado un id,
+// esta url es para 'compartir' y asi
 route.get('/producto/:id', (req, res) => {
     const productId = isThisValidId(req.params.id, res);
     Product.find({_id: productId}).then((producto) => {
@@ -297,7 +301,7 @@ route.get('/producto/:id', (req, res) => {
     }).catch(err => { res.status(400).send(err); });
 });
 
-//Devuelve todos los productos de una categoria
+//Devuelve todos los productos de una categoria (incluyendo las subcategorias)
 // las categorias con espacios deben ser URL encoded
 //Ejemplo:
 route.get('/categoria/:categoria', (req, res) => {
@@ -322,6 +326,22 @@ route.get('/categoria/:categoria/:subcategoria', (req, res) => {
     });
 });
 
+//Devuelve los productos de una subcategoria paginados
+// GET: getProductoPorCategoria(subcategoria, stride, pagina)
+route.get('/productosDe/:subcategoria/:page/:shown', (req, res) => {
+    Product.find({subcategorias: req.params.subcategoria})
+        .sort({agregado: 1})
+        .skip(parseInt(req.params.page))
+        .limit(parseInt(req.params.shown))
+        .then((productos) => {
+            res.status(200).send(productos);
+        }).catch((err) => {
+            console.log(err);
+            res.status(400).send(err);
+        });
+});
+
+//utilizado para desplegar los comentarios de un producto en la vista de un producto
 route.get('/getComentarios/:productId', (req, res) => {
     const productoId = req.params.productId;
     isThisValidId(productoId);
@@ -339,7 +359,8 @@ route.get('/getComentarios/:productId', (req, res) => {
     });
 });
 
-//se presume que ya se tiene en cache la informacion del producto y el id de la empresa
+// dado el id de una compania se regresa su informacion publica, 
+// pensado para ser utilizado en vista de producto
 route.get('/provedorDeProducto/:companyId', (req, res) => {
     const companyId = req.params.companyId;
     isThisValidId(companyId);
@@ -352,20 +373,6 @@ route.get('/provedorDeProducto/:companyId', (req, res) => {
         console.log(err);
     });
 });
-// GET: getProductoPorCategoria(subcategoria, stride, pagina)
-route.get('/productosDe/:subcategoria/:page/:shown', (req, res) => {
-    Product.find({subcategorias: req.params.subcategoria})
-        .sort({agregado: 1})
-        .skip(parseInt(req.params.page))
-        .limit(parseInt(req.params.shown))
-        .then((productos) => {
-            res.status(200).send(productos);
-        }).catch((err) => {
-            console.log(err);
-            res.status(400).send(err);
-        });
-});
-
 
 
 
@@ -384,8 +391,6 @@ const isThisValidId = ((myId, res) => {
 
 
 }
-
-
 
 
 

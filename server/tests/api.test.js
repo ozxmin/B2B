@@ -115,24 +115,26 @@ describe('Registro admin y empresa', () => {
                 if(err) {
                  return done(err)
                 }
+                tokenUsuario = null
+                // console.log('TOKEN NIL--------------------');
+                // console.log(tokenUsuario);
                 done();
-            });
+            });            
     });
 
     it('login: agrega un token al llavero', (done) => {
-
-
         request(app).post('/login')
             .send({email: emailUsuario, password: 'contrasena'})
             .expect(200)
             .end((err, res) => {
-                User.find({nombre: nombreUsuario}).then((loggedIn) => {                    
-                    expect(loggedIn[0].tokens.length).toBeGreaterThan(0);
-                    expect(loggedIn[0].tokens[0].token).toBe(res.body.tokens[0].token);
+                User.findOne({nombre: nombreUsuario}).then((loggedIn) => {                
+                   expect(loggedIn.tokens.length).toEqual(1);
+                    expect(loggedIn.tokens[0].token).toBe(res.body.tokens[0].token);
                 }).catch((err) => {
                     console.log(err);
                     return done(err);
                 });
+                tokenUsuario = res.body.tokens[0].token
                 done();
             });
     });

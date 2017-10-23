@@ -75,9 +75,10 @@ const UserSchema = new Schema ({
 
 //=========================Instance Methods=========================
 
+//registra una empresa si el usuario es admin
 UserSchema.methods.registraEmpresa = function(datosEmpresa) {
     //Shaky route
-    //Revisar bien lo de las promesas por que dentro del .then no regresa promesas resueltas
+    //Revisar bien lo de las promesas porque dentro del .then no regresa promesas resueltas
     // revisar el error de unhadled error duplicate key en routes.js
     let admin = this;
     let nuevaEmpresa = new Company(datosEmpresa);
@@ -98,8 +99,7 @@ UserSchema.methods.registraEmpresa = function(datosEmpresa) {
     return Promise.resolve(nuevaEmpresa);
 };
 
-
-//Agrega un producto a los productos de la empresa y los guarda en db
+//Agrega un producto a la lista de productos de la empresa y los guarda en db
 // --no le caería mal una refacorización para reducir el numero de returns
 UserSchema.methods.agregaProducto = function (datosProducto) {
     let usuario = this;
@@ -120,7 +120,7 @@ UserSchema.methods.agregaProducto = function (datosProducto) {
     });
 };
 
-
+//devuelve la compania a la que este usuario pertenece
 UserSchema.methods.getCompany = function (id) {
     const user = this;
     const companyId = mongoose.Types.ObjectId(String(id))
@@ -129,7 +129,6 @@ UserSchema.methods.getCompany = function (id) {
         if(!companyFound) {
             return Promise.reject('compania no encontrada');
         }
-
         return Promise.resolve(companyFound);
     }).catch((err) => {
         console.log(err);
@@ -178,14 +177,15 @@ UserSchema.statics.findByToken = function(token) {
         //lets us query a nested value
         'tokens.token': token,
         'tokens.access': access
-    });
+    })
 };
 
 //Busca a un usuario dado su usario y password
-UserSchema.statics.findByCredentials = function (user, password) {
+UserSchema.statics.findByCredentials = function (email, password) {
     let User = this;
-    return User.findOne({user}).then((usuario) => {
-        if (!usuario) {
+    return User.findOne({email}).then((usuario) => {
+        if (!usuario || email == undefined) {
+            console.log('FAILED');
             return Promise.reject('usuario no encontrado');
         }
         //bcrypct doesnot support promises so we wrap it up to keep working
@@ -215,6 +215,9 @@ UserSchema.pre('save', function(next) {
     }
 });
 
+//[to be changed]
+//removerá su referencia de la empresa
+//hacer otro api donde el admin pueda remover usuarios de su empresa
 UserSchema.pre('remove', function(next) {
     let user = this;
     let userProducts = mongoose.model('Productos');

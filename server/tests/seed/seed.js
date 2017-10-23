@@ -130,7 +130,7 @@ const productosDeEmpresa = [{
 
 //===============Comentarios
 const comentarios = {
-	titulo: 'itulo Prueba',
+	titulo: 'Titulo Prueba',
 	comentario: `comentario prueba ${random(100)}`
 }
 
