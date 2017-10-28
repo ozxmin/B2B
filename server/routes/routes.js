@@ -23,7 +23,7 @@ route.get('/', (req, res) => {
 //============================= Rutas empresa  ==================================
 
 const camposRegistroEmpresa = ['nombreEmpresa', 'membresia', 'suscripcion', 'miembros'];
-const datosAdmin = ['nombre', 'apellido', 'email', 'rol', 'password']
+const datosAdmin = ['nombre', 'apellido', 'email', 'password']
 
 //Se utiliza al registrarse por primera vez una empresa, se crea el usuario con el rol de adiministrador
 //Se guarda el usuario y se devuelve el token el cual será utilizado para crear 
@@ -46,6 +46,33 @@ route.post('/registroadmin', (req, res) => {
         res.status(400).send(e);
     });
 });
+
+//Los miembros de la empresa (usuarios normales), los agrega el administrador
+// Se tiene que estar logeado como admin
+//Se agrega un usuario a la BD con los datos de la empresa, igualmente se agrega a la lista 
+//de usuarios de la empresa
+// se utilzan los campos declarados en 'userFields' para crear un nuevo usuario
+route.post('/agregaUsuarioAEmpresa', authenticate, (req, res) => {
+    const admin = req.user;
+    if (admin.rol != 'admin') {
+        res.status(401).send()
+    }
+    const userFields = ['nombre', 'apellido', 'email', 'password', 'rol'];
+    const datosNuevoUsuario = _.pick(req.body, userFields);
+    let usuarioNormal = new User(datosNuevoUsuario)
+    Company.findById(admin.empresaRef).then((empresa) => {
+        usuarioNormal.nombreEmpresa = empresa.nombre;
+        usuarioNormal.empresaRef = empresa._id;
+        empresa.miembros.push(usuarioNormal);
+        Promise.all([usuarioNormal.save(), empresa.save()]).then((success) => {
+            res.status(201).send(success[1]);
+        });
+    }).catch((err) => {
+        console.log(err);
+        res.status(400).send(err);
+    })
+});
+
 
 //Despues de guardado el usuario principal se usa registroEmpresa para crear la empresa
 //Y guardar los datos esenciales
@@ -100,31 +127,6 @@ route.get('/producto/:id', (req, res) => {
 
 const datosPublicosUsuario = ['nombre','email', 'direccion', 'ubicacion','rfc','empresa',
     'logotipo','celular','descripcion', 'creado', 'empresa'];
-const datosModificablesPorUsuario = ['nombre','email','password','ubicacion','rfc','empresa',
-    'logotipo','celular','descripcion', 'direccion'];
-
-// crea cuenta de usuario de 'normal' no 
-// genera token que será usado en las rutas privadas
-//recibe como parametros los campos de datosDatosModificablesPorUsuario
-route.post('/creausuario', (req, res) => {
-    const fields = _.pick(req.body, datosModificablesPorUsuario);
-    // we'll have the user from the req
-    let user = new User(fields);
-    user.save().then(() => {
-        // we return the rusult from generateAuthToken (a promise)
-            return user.generateAuthToken();
-    }).then((token) => {
-        // no se regresa contrasena
-        const confirmationFields = _.pick(user, [
-            'nombre','email', 'ubicacion','rfc','empresa','logotipo',
-            'celular','descripcion', 'direccion'
-        ]);
-        // custom header `x-header`
-        res.status(201).header('x-auth', token).send(confirmationFields);
-    }).catch((e) => {
-        res.status(400).send(e);
-    });
-});
 
 // devuelve un token de accesso y lo agrega a la BD. Este token se utiliza para
 //confirmar que la sesion está activa en un navegador
