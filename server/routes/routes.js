@@ -65,7 +65,7 @@ route.post('/agregaUsuarioAEmpresa', authenticate, (req, res) => {
         usuarioNormal.empresaRef = empresa._id;
         empresa.miembros.push(usuarioNormal);
         Promise.all([usuarioNormal.save(), empresa.save()]).then((success) => {
-            res.status(201).send(success[1]);
+            res.status(201).send(success[0]);
         });
     }).catch((err) => {
         console.log(err);

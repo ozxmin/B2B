@@ -11,14 +11,26 @@ const random = (upTo) =>  Math.floor((Math.random() * upTo) + 1);
 
 ///==========Users================
 const adminGoodProbe = {
-    nombre: `usuario${random(100)}`,
+    nombre: `admin${random(100)}`,
     apellido: 'apellido',
-    email: `ejemplo${random(100)}@correo.com`,
+    email: `admin${random(100)}@correo.com`,
     password: 'contrasena',
     nombreEmpresa: `miEmpresa`,
     rol: 'vendedor',
     celular: 1234567890
 };
+
+const normalUser = {
+        nombre: `normal${random(100)}`,
+        apellido: 'user',
+        email: `normal${random(100)}@usuario.com`,
+        password: 'contrasena',
+        nombreEmpresa: `miEmpresa`,
+        rol: 'ventas',
+        celular: 1234567890
+    // };  
+}; 
+
 const datosMinEmpresa = {
     nombreEmpresa: `miempresa${random(100)}`, 
     membresia: 'comerciante',
@@ -134,9 +146,6 @@ const comentarios = {
 	comentario: `comentario prueba ${random(100)}`
 }
 
-
-
-
 //==============Ads
 const adsConnected =  [
     {
@@ -163,7 +172,7 @@ const adsConnected =  [
 ];
 
 
-//================> Set up
+//================> Set Up DB
 
 const populateDB = (done) => {
     Promise.all([
@@ -179,5 +188,6 @@ const populateDB = (done) => {
 
 
 module.exports = {
-    populateDB, adsConnected, datosMinEmpresa, adminGoodProbe, random, productosDeEmpresa, comentarios
+    populateDB, adsConnected, datosMinEmpresa, adminGoodProbe, random, 
+    productosDeEmpresa, comentarios, normalUser
 }

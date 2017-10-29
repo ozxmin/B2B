@@ -10,8 +10,9 @@ const {Company} = require('./../db/models/company');
 const {ConnectedAd} = require('./../db/models/publicidadConnected');
 const {Review} = require('./../db/models/reviews');
 
-// Test Global variables
+// Global test variables, from seed.js
 const {
+    normalUser,
     populateDB, 
     adsConnected, 
     datosMinEmpresa, 
@@ -20,7 +21,9 @@ const {
     productosDeEmpresa,
     comentarios
 } = require('./seed/seed')
-let tokenUsuario, idProductoAgregado, nombreUsuario, emailUsuario;
+
+// local variables for api.test
+let tokenAdmin, idProductoAgregado, nombreUsuario, emailUsuario;
 
 //================> Set up
 before(populateDB);
@@ -28,14 +31,14 @@ before(populateDB);
 //>>>>>>>>>>>>>>>>==============> Inicio de pruebas
 
 //=================Registro
-describe('Registro admin y empresa', () => {
+describe('Registro admin, empresa y miembros', () => {
     
     it('/registroadmin: guarda admin en DB', (done) => {
         request(app).post('/registroadmin')
             .send(adminGoodProbe)
             .expect((res) => {
                 expect(res.body.nombre).toBe(adminGoodProbe.nombre);
-                tokenUsuario = res.header['x-auth'];
+                tokenAdmin = res.header['x-auth'];
             })
             .expect(201)
             .end((err, res) => {
@@ -61,7 +64,7 @@ describe('Registro admin y empresa', () => {
     it('/registroEmpresa Registra empresa', (done) => {
         request(app)
             .post('/registroEmpresa')
-            .set('x-auth', tokenUsuario)
+            .set('x-auth', tokenAdmin)
             .send(datosMinEmpresa)
             .expect((res) => {
                 expect(res.body.empresa).toBe(datosMinEmpresa.empresa);
@@ -78,13 +81,33 @@ describe('Registro admin y empresa', () => {
             });
     });
 
+    it('Agrega miembro a empresa', (done) => {
+        const myNormalUser = normalUser;
+        request(app).post('/agregaUsuarioAEmpresa')
+        .set('x-auth', tokenAdmin)
+        .send(normalUser)
+        .expect(201)
+        .end((err, res) => {
+            if (err) { return done(err) }
+            const nuevoUsuario = res.body
+            Company.findById(nuevoUsuario.empresaRef).then((empresa) => {
+                expect(empresa.miembros).toInclude(nuevoUsuario._id);
+            }).then(() => {
+                User.findById(nuevoUsuario._id).then((usuario) => {
+                    expect(usuario.nombre).toEqual(usuario.nombre)
+                }).catch((err) => {done(err)});
+            })            
+            done();            
+        });
+    });
+
     it('Agrega producto', (done) => {
-        const myRandom = random(productosDeEmpresa.length)
-        const producto = productosDeEmpresa[myRandom-1];
+        const myRandomProduct = random(productosDeEmpresa.length)
+        const producto = productosDeEmpresa[myRandomProduct-1];
 
         productosDeEmpresa.forEach(function(producto) {
             request(app).post('/agregaProducto')
-            .set('x-auth', tokenUsuario)
+            .set('x-auth', tokenAdmin)
             .send(producto)
             .expect(201)
             .end((err, res) => {
@@ -102,7 +125,7 @@ describe('Registro admin y empresa', () => {
 
     it('logout: Borra el token usado en la sesion', (done) => {
         request(app).delete('/logout')
-            .set('x-auth', tokenUsuario)
+            .set('x-auth', tokenAdmin)
             .send()
             .expect(205)
             .end((err, res) => {
@@ -111,13 +134,13 @@ describe('Registro admin y empresa', () => {
                 }).catch((err) => {
                     console.log(err);
                     return done(err);
-                })
+                });
                 if(err) {
                  return done(err)
                 }
-                tokenUsuario = null
+                tokenAdmin = null
                 // console.log('TOKEN NIL--------------------');
-                // console.log(tokenUsuario);
+                // console.log(tokenAdmin);
                 done();
             });            
     });
@@ -134,7 +157,7 @@ describe('Registro admin y empresa', () => {
                     console.log(err);
                     return done(err);
                 });
-                tokenUsuario = res.body.tokens[0].token
+                tokenAdmin = res.body.tokens[0].token
                 done();
             });
     });
@@ -213,7 +236,7 @@ describe('Home Publico', () => {
         };
         request(app).post('/comentarProducto')
             .send(comentario)
-            .set('x-auth', tokenUsuario)
+            .set('x-auth', tokenAdmin)
             .expect(201)
             .end((err, res) => {
                 if (err) {
@@ -245,7 +268,7 @@ describe('Productos Pubilco', () => {
 
 
         // request(app).post('/comentarProducto')
-        //     .set('x-auth', tokenUsuario)
+        //     .set('x-auth', tokenAdmin)
         //     .send(comentario)
         //     .expect(() => {
         //         expect('oeuj').toBe(3);        
