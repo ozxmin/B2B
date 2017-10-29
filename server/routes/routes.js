@@ -237,6 +237,22 @@ route.post('/comentarProducto', authenticate, (req, res) => {
     
 });
 
+
+//devuelve info de empresa del usuario que se encuentra loggeado
+route.get('/miempresa', authenticate, (req, res) => {
+    let usuario = req.user
+    Company.findById(usuario.empresaRef).then((compania) => {
+        if (!compania) {
+            res.status(404).send();
+        }
+        res.status(201).send(compania);
+    }).catch((err) => {
+        console.log(err);
+        res.status(400).send(err);
+    })
+ });
+
+
 //=========================Private Product API=========================
 
 const editablesDeProducto = [
