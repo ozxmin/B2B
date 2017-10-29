@@ -47,6 +47,25 @@ route.post('/registroadmin', (req, res) => {
     });
 });
 
+
+//Despues de guardado el usuario principal se usa registroEmpresa para crear la empresa
+//Y guardar los datos esenciales
+//recibe como parametros los campos de camposRegistroEmpresa
+route.post('/registroEmpresa', authenticate, (req, res) => {
+    const datosEmpresa = _.pick(req.body, camposRegistroEmpresa);
+    const admin = req.user;
+    admin.registraEmpresa(datosEmpresa).then((empresaGuardada) => {
+        // console.log('empresa guardada /registroEmpresa',empresaGuardada);
+        res.status(201).send(empresaGuardada)
+        if(!empresaGuardada) {
+            res.status(404).send('empresa no guardada', empresaGuardada);
+        }
+    }).catch((err) => {
+        console.log('err /registroEmpresa',err);
+      res.status(400).send(err);  
+    })
+});
+
 //Los miembros de la empresa (usuarios normales), los agrega el administrador
 // Se tiene que estar logeado como admin
 //Se agrega un usuario a la BD con los datos de la empresa, igualmente se agrega a la lista 
@@ -70,25 +89,6 @@ route.post('/agregaUsuarioAEmpresa', authenticate, (req, res) => {
     }).catch((err) => {
         console.log(err);
         res.status(400).send(err);
-    })
-});
-
-
-//Despues de guardado el usuario principal se usa registroEmpresa para crear la empresa
-//Y guardar los datos esenciales
-//recibe como parametros los campos de camposRegistroEmpresa
-route.post('/registroEmpresa', authenticate, (req, res) => {
-    const datosEmpresa = _.pick(req.body, camposRegistroEmpresa);
-    const admin = req.user;
-    admin.registraEmpresa(datosEmpresa).then((empresaGuardada) => {
-        // console.log('empresa guardada /registroEmpresa',empresaGuardada);
-        res.status(201).send(empresaGuardada)
-        if(!empresaGuardada) {
-            res.status(404).send('empresa no guardada', empresaGuardada);
-        }
-    }).catch((err) => {
-        console.log('err /registroEmpresa',err);
-      res.status(400).send(err);  
     })
 });
 
@@ -206,7 +206,6 @@ route.patch('/completaRegistroEmpresa', authenticate, (req, res) => {
         console.log(err);
         res.status(400).send(err);
     });
-
 });
 
 //recibe el id de producto en el request, crea el comentario en la base de datos junto con el id_ref del producto
@@ -237,6 +236,28 @@ route.post('/comentarProducto', authenticate, (req, res) => {
     
 });
 
+
+//new
+//creado para que el admin pueda borrar usuarios de su empresa
+//toma como parametro el id del usuario a borrar, este dato se obtiene al llamar el API miempresa
+//
+route.delete('/borraUsuario', authenticate, (req, res) => {
+    let admin = req.user;
+    if (admin.rol != 'admin') {
+        res.status(401).send();
+    }
+    let exusuarioID = isThisValidId(req.body.exusuarioID)
+    User.findById(exusuarioID).then((exusuario) => {
+        Promise.all([exusuario.remove(), 
+            Company.update({'_id': admin.empresaRef}, {$pull: {miembros: exusuarioID}})])
+        .then((results) => {
+            res.status(205).send(results);            
+        }).catch((err) => {
+            console.log(err);
+            res.status(400).send(err);
+        });
+    });
+});
 
 //devuelve info de empresa del usuario que se encuentra loggeado
 route.get('/miempresa', authenticate, (req, res) => {
@@ -397,7 +418,6 @@ route.get('/provedorDeProducto/:companyId', (req, res) => {
 
 //Utils
 //-----
-
 const isThisValidId = ((myId, res) => {
     if(!ObjectID.isValid(myId)) {
         return res.status(411).send(`id no valido: ${myId}`);
@@ -406,10 +426,8 @@ const isThisValidId = ((myId, res) => {
     }
 });
 
-
-
 }
-
+//========== Fin de function(route)
 
 
 //// ---- Deprecated APIs 
@@ -447,5 +465,31 @@ const isThisValidId = ((myId, res) => {
 //         res.send(usuario);
 //     }).catch((error) => {
 //         res.status(400).send(error);
+//     });
+// });
+
+// crea cuenta de usuario de 'normal' no 
+// genera token que será usado en las rutas privadas
+//recibe como parametros los campos de datosDatosModificablesPorUsuario
+
+// route.post('/creausuario', (req, res) => {
+    // const datosModificablesPorUsuario = ['nombre','email','password','ubicacion','rfc','empresa',
+    // 'logotipo','celular','descripcion', 'direccion'];
+//     const fields = _.pick(req.body, datosModificablesPorUsuario);
+//     // we'll have the user from the req
+//     let user = new User(fields);
+//     user.save().then(() => {
+//         // we return the rusult from generateAuthToken (a promise)
+//             return user.generateAuthToken();
+//     }).then((token) => {
+//         // no se regresa contrasena
+//         const confirmationFields = _.pick(user, [
+//             'nombre','email', 'ubicacion','rfc','empresa','logotipo',
+//             'celular','descripcion', 'direccion'
+//         ]);
+//         // custom header `x-header`
+//         res.status(201).header('x-auth', token).send(confirmationFields);
+//     }).catch((e) => {
+//         res.status(400).send(e);
 //     });
 // });

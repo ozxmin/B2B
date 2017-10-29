@@ -215,14 +215,47 @@ UserSchema.pre('save', function(next) {
     }
 });
 
+// UserSchema.methods.removeToken = function (token) {
+//     let user = this;
+//     return user.update({
+//         $pull:{ tokens: {
+//             token: token
+//         }}
+//     });
+
+
 //[to be changed]
 //removerá su referencia de la empresa
 //hacer otro api donde el admin pueda remover usuarios de su empresa
-UserSchema.pre('remove', function(next) {
-    let user = this;
-    let userProducts = mongoose.model('Productos');
-    userProducts.remove({_id: {$in: user.productosUsuario}}).then(() => next());
-});
+// UserSchema.pre('remove', function(next) {
+    // let user = this;
+    // next()
+    // let userCompany = mongoose.model('companias');
+    // console.log('user.rol: ', user.rol);
+    // console.log('user.empresaRef', user.empresaRef);
+    // if (user.rol != 'admin' ) {
+
+        // Company.remove({_id: {$in: user.empresaRef}}).then(() => next());
+        // console.log('not admin');
+        // Company.findOne({_id: user.empresaRef}).then((company) => {
+        //    company.update({$pull: {miembros: {$in: user._id}}});
+        //     company.save();
+        //     console.log(company);
+        //     next();
+        // }).catch( err => {
+        //     console.log('error');
+        //     console.log(err);
+        // })
+
+    // }
+    // if (user.rol == 'admin') {
+        // console.log('admin');
+        // Company.remove({_id: {$in: user.empresaRef}}).then(() => next());        
+    // }
+
+    // let userProducts = mongoose.model('Productos');
+    // userProducts.remove({_id: {$in: user.productosUsuario}}).then(() => next());
+// });
 
 
 let User = mongoose.model('usuarios', UserSchema);
