@@ -95,8 +95,9 @@ describe('Registro admin, empresa y miembros', () => {
             }).then(() => {
                 User.findById(nuevoUsuario._id).then((usuario) => {
                     expect(usuario.nombre).toEqual(usuario.nombre)
+                    console.log("ID Usuario Normal: ", nuevoUsuario._id);
                 }).catch((err) => {done(err)});
-            })            
+            })
             done();            
         });
     });
@@ -239,6 +240,8 @@ describe('Home Publico', () => {
             .set('x-auth', tokenAdmin)
             .expect(201)
             .end((err, res) => {
+                console.log('token admin', tokenAdmin);
+
                 if (err) {
                     return done(err);
                 }

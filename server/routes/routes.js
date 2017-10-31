@@ -171,15 +171,20 @@ route.get('/miUsuario', authenticate, (req, res) => {
     res.send(usuario);
 });
 
-//borra la cuenta del usuario
-route.delete('/borraMiUsuario', authenticate, (req, res) => {
+//borra la cuenta de un usuario
+// si no es admin borra la cuenta y lo elimina de la lista de miembros de la empresa 
+// a la que pertenecia.
+// si es admin borra la empreasa y los productos
+// se recomienda mandar una advertecia al usuario de lo anterior
+route.delete('/borraMiCuenta', authenticate, (req, res) => {
     let usuario = req.user;
     usuario.remove({usuario: '._id'}).then((usuario) => {
-        res.status(205).send({"message": "usuario borrado"});
+        res.status(205).send({"message": "cuenta, empresa y productos asociados borrado"});
     }).catch((error) => {
         res.status(400).send(error);
     });
 });
+
 
 //diseñado para ser utilizado al completar el registro, aunque tambien para
 // modificar datos posteriormente
@@ -311,7 +316,6 @@ route.delete('/borraProducto/:id', authenticate, (req, res) => {
     });
 });
 
-
 // re hacer este api, getProduct ya no existe
 //edita producto 205 Reset Content
 //recibe los datos declarados en editablesDeProducto
@@ -347,18 +351,6 @@ route.get('/categoria/:categoria', (req, res) => {
     Product.find({categoria: req.params.categoria}).then((productos) => {
         if (productos.length < 1) {
             res.status(404).send({message: `no se encontraron productos en '${req.params.categoria}'`});
-        } else  { res.status(200).send(productos); }
-    }).catch(err => {
-        res.status(404).send(err);
-    });
-});
-
-//Devuelve los productos de una subcategoria
-//Ejemplo de uso: localhost:3000/categoria/Fibras/Fibra%20de%20lana
-route.get('/categoria/:categoria/:subcategoria', (req, res) => {
-    Product.find({categoria: req.params.categoria}).then((productos) => {
-        if (!productos[req.params.subcategoria]) {
-            res.status(404).send({message: `no se encontraron productos en '${req.params.subcategoria}'`});
         } else  { res.status(200).send(productos); }
     }).catch(err => {
         res.status(404).send(err);
@@ -491,5 +483,17 @@ const isThisValidId = ((myId, res) => {
 //         res.status(201).header('x-auth', token).send(confirmationFields);
 //     }).catch((e) => {
 //         res.status(400).send(e);
+//     });
+// });
+
+//Devuelve los productos de una subcategoria
+//Ejemplo de uso: localhost:3000/categoria/Fibras/Fibra%20de%20lana
+// route.get('/categoria/:categoria/:subcategoria', (req, res) => {
+//     Product.find({categoria: req.params.categoria}).then((productos) => {
+//         if (!productos[req.params.subcategoria]) {
+//             res.status(404).send({message: `no se encontraron productos en '${req.params.subcategoria}'`});
+//         } else  { res.status(200).send(productos); }
+//     }).catch(err => {
+//         res.status(404).send(err);
 //     });
 // });
