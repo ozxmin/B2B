@@ -1,4 +1,5 @@
 //"use strict"
+const path = require('path');
 const env = require('./config');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -9,6 +10,9 @@ let app = express();
 
 //middleware configuration, which will parse the requests
 app.use(bodyParser.json());
+//Serving the landing page
+const publicPath = path.join(__dirname, '../vue');
+app.use('/', express.static(publicPath));
 //Inyeccion de depondencia app en routes()
 // require('./routes/routes')(app);//
 routes(app);
